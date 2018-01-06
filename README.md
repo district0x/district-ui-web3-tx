@@ -92,6 +92,20 @@ Event fired when there was an error sending transaction. Use this event to hook 
 #### `::tx-success`
 Event fired when transaction was successfully processed. Use this event to hook into event flow.
 
+```clojure
+(ns my-district.events
+    (:require [district.ui.web3-tx.events :as tx-events]
+              [re-frame.core :refer [reg-event-fx]]
+              [day8.re-frame.forward-events-fx]))
+              
+(reg-event-fx
+  ::my-event
+  (fn []
+    {:register :my-forwarder
+     :events #{::tx-events/tx-success}
+     :dispatch-to [::do-something-after-tx-success]}))
+```
+
 #### `::tx-error`
 Event fired when there was an error processing a tx. Use this event to hook into event flow.
 
