@@ -33,7 +33,7 @@ You can pass following args to initiate this module:
 re-frame subscriptions provided by this module:
 
 #### `::txs [filter-opts]`
-Returns all transactions. Optionally, you can provide filter opts if you want to filter only transaction with a specific property in 
+Returns all transactions. Optionally, you can provide filter opts if you want to filter only transactions with a specific property in 
 tx receipt. For example it can be `:status`, `:from`, `:to`.  
 There are 3 possible transaction statuses:  
 * `:tx.status/success`
