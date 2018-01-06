@@ -92,8 +92,8 @@
   (run-test-async
     (let [contract (subscribe [::contract])
           txs (subscribe [::subs/txs])
-          pending-txs (subscribe [::subs/txs-with-status :tx.status/pending])
-          success-txs (subscribe [::subs/txs-with-status :tx.status/success])
+          pending-txs (subscribe [::subs/txs {:status :tx.status/pending}])
+          success-txs (subscribe [::subs/txs {:status :tx.status/success}])
           accounts (subscribe [::accounts-subs/accounts])]
 
       (-> (mount/with-args
@@ -140,8 +140,8 @@
   (run-test-async
     (let [contract (subscribe [::contract])
           txs (subscribe [::subs/txs])
-          pending-txs (subscribe [::subs/txs-with-status :tx.status/pending])
-          failed-txs (subscribe [::subs/txs-with-status :tx.status/error])
+          pending-txs (subscribe [::subs/txs {:status :tx.status/pending}])
+          failed-txs (subscribe [::subs/txs {:status :tx.status/error}])
           accounts (subscribe [::accounts-subs/accounts])]
 
       (-> (mount/with-args

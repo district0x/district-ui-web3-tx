@@ -9,13 +9,9 @@
 
 (reg-sub
   ::txs
-  queries/txs)
+  (sub-fn queries/txs))
 
 (reg-sub
   ::tx
   (sub-fn queries/tx))
-
-(reg-sub
-  ::txs-with-status
-  (sub-fn queries/txs-with-status))
 

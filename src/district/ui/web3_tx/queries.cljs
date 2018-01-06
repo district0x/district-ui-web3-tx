@@ -1,15 +1,17 @@
 (ns district.ui.web3-tx.queries)
 
-(defn txs [db]
-  (-> db :district.ui.web3-tx :txs))
+(defn txs
+  ([db]
+   (-> db :district.ui.web3-tx :txs))
+  ([db filter-opts]
+   (if filter-opts
+     (into {} (filter (fn [[_ tx]]
+                        (= filter-opts (select-keys tx (keys filter-opts))))
+                      (txs db)))
+     (txs db))))
 
 (defn tx [db tx-hash]
   (get (txs db) tx-hash))
-
-(defn txs-with-status [db tx-status]
-  (into {} (filter (fn [[_ tx]]
-                     (= tx-status (:status tx)))
-                   (txs db))))
 
 (defn localstorage-disabled? [db]
   (-> db :district.ui.web3-tx :disable-using-localstorage?))

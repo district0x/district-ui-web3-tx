@@ -30,7 +30,7 @@
   ::watch-pending-txs
   interceptors
   (fn [{:keys [:db]}]
-    (let [pending-txs (queries/txs-with-status db :tx.status/pending)]
+    (let [pending-txs (queries/txs db {:status :tx.status/pending})]
       (when (seq pending-txs)
         {:web3/watch-transactions {:web3 (web3-queries/web3 db)
                                    :transactions (for [tx-hash (keys pending-txs)]
@@ -111,8 +111,8 @@
   [interceptors (validate-first-arg ::tx-hash)]
   (fn [{:keys [:db]} [tx-hash]]
     (let [new-db (queries/merge-tx-data db tx-hash {:created-on (js/Date.)
-                                               :transaction-hash tx-hash
-                                               :status :tx.status/pending})]
+                                                    :transaction-hash tx-hash
+                                                    :status :tx.status/pending})]
       (merge
         {:db new-db}
         (when-not (queries/localstorage-disabled? db)
@@ -145,6 +145,6 @@
     {:db (queries/dissoc-web3-tx db)
      :web3/stop-watching {:ids (map (fn [[tx-hash]]
                                       (str :district.ui.web3-tx tx-hash))
-                                    (queries/txs-with-status db :tx.status/pending))}
+                                    (queries/txs db {:status :tx.status/pending}))}
      :forward-events {:unregister ::web3-created}}))
 

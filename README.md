@@ -6,7 +6,7 @@ Clojurescript [mount](https://github.com/tolitius/mount) + [re-frame](https://gi
 that handles [web3](https://github.com/ethereum/web3.js/) smart-contract transactions.  
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.0"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.1"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 **Warning:** district0x modules are still in early stages, therefore API can change in a future.
@@ -32,11 +32,10 @@ You can pass following args to initiate this module:
 ## district.ui.web3-tx.subs
 re-frame subscriptions provided by this module:
 
-#### `::txs`
-Returns all transactions
-
-#### `::txs-with-status [tx-status]`
-Returns all transactions with status `tx-status`. There are 3 possible transaction statuses:
+#### `::txs [filter-opts]`
+Returns all transactions. Optionally, you can provide filter opts if you want to filter only transaction with a specific property in 
+tx receipt. For example it can be `:status`, `:from`, `:to`.  
+There are 3 possible transaction statuses:  
 * `:tx.status/success`
 * `:tx.status/pending`
 * `:tx.status/error`
@@ -47,7 +46,7 @@ Returns all transactions with status `tx-status`. There are 3 possible transacti
               [district.ui.web3-tx :as subs]))
   
   (defn home-page []
-    (let [pending-txs (subscribe [::subs/txs-with-status :tx.status/pending])]  
+    (let [pending-txs (subscribe [::subs/txs {:status :tx.status/pending}])]  
       (fn []
         [:div "Your pending transactions: "]
         (for [[tx-hash tx] @pending-txs]
@@ -131,9 +130,6 @@ data directly with `get-in` into re-frame db.*
 
 #### `txs [db]`
 Works the same way as sub `::txs`
-
-#### `txs-with-status [db tx-status]`
-Works the same way as sub `::txs-with-status`
 
 #### `tx [db tx-hash]`
 Works the same way as sub `::tx`
