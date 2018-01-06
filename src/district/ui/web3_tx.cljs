@@ -2,8 +2,8 @@
   (:require
     [akiroz.re-frame.storage :as re-frame-storage]
     [cljs.spec.alpha :as s]
-    [cljsjs.web3]
     [district.ui.web3-tx.events :as events]
+    [district.ui.web3]
     [mount.core :as mount :refer [defstate]]
     [re-frame.core :refer [dispatch-sync]]))
 
