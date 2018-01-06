@@ -133,6 +133,17 @@
 
 
 (reg-event-fx
+  ::remove-tx
+  [interceptors (validate-first-arg ::tx-hash)]
+  (fn [{:keys [:db]} [tx-hash]]
+    (let [new-db (queries/remove-tx db tx-hash)]
+      (merge
+        {:db new-db}
+        (when-not (queries/localstorage-disabled? db)
+          {:web3-tx-localstorage (select-keys new-db [:district.ui.web3-tx])})))))
+
+
+(reg-event-fx
   ::clear-localstorage
   (fn []
     {:web3-tx-localstorage nil}))

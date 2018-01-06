@@ -19,6 +19,9 @@
 (defn merge-tx-data [db tx-hash tx-data]
   (update-in db [:district.ui.web3-tx :txs tx-hash] merge tx-data))
 
+(defn remove-tx [db tx-hash]
+  (update-in db [:district.ui.web3-tx :txs] dissoc tx-hash))
+
 (defn merge-txs [db txs]
   (update-in db [:district.ui.web3-tx :txs] merge txs))
 

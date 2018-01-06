@@ -180,5 +180,10 @@
                         (is (instance? js/Date created-on))
                         (is (= status :tx.status/error))
 
-                        (dispatch [::clear-localstorage])
-                        (wait-for [::localstorage-cleared])))))))))))))
+                        (dispatch [::events/remove-tx transaction-hash])
+                        (wait-for [::events/remove-tx]
+                          (is (= 0 (count @txs)))
+
+                          (dispatch [::clear-localstorage])
+                          (wait-for [::localstorage-cleared]))))))))))))))
+

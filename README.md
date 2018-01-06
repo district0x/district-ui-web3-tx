@@ -6,7 +6,7 @@ Clojurescript [mount](https://github.com/tolitius/mount) + [re-frame](https://gi
 that handles [web3](https://github.com/ethereum/web3.js/) smart-contract transactions.  
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.2"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.3"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 **Warning:** district0x modules are still in early stages, therefore API can change in a future.
@@ -115,7 +115,10 @@ Event fired when receipt for a tx was loaded. No matter if tx succeeded or faile
 Adds new transaction hash into db, sets it as `:tx.status/pending`. 
 
 #### `::set-tx [tx-hash tx-data]`
-Updates a transaction. This is called when tx receipt is loaded. 
+Updates a transaction. This is called when tx receipt is loaded.
+
+#### `::remove-tx [tx-hash]`
+Removes transaction.  
 
 #### `::clear-localstorage`
 Clears transactions from localstorage.
@@ -139,6 +142,9 @@ Returns true is using localstorage is disabled.
 
 #### `merge-tx-data [db tx-hash tx-data]`
 Merges tx data into a transaction with hash `tx-hash` and returns new re-frame db.
+
+#### `remove-tx [db tx-hash]`
+Removes transaction and returns new re-frame db.
 
 #### `merge-txs [db txs]`
 Merges transactions and returns new re-frame db.
