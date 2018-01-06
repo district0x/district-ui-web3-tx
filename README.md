@@ -3,7 +3,10 @@
 [![Build Status](https://travis-ci.org/district0x/district-ui-web3-tx.svg?branch=master)](https://travis-ci.org/district0x/district-ui-web3-tx)
 
 Clojurescript [mount](https://github.com/tolitius/mount) + [re-frame](https://github.com/Day8/re-frame) module for a district UI,
-that handles [web3](https://github.com/ethereum/web3.js/) smart-contract transactions.  
+that helps managing [web3](https://github.com/ethereum/web3.js/) smart-contract transactions in following ways:   
+* Serves as central place to fire re-frame events after all transaction related events. Other modules can then easily hook into those events and provide
+additional features on top of it. Example of such module is [district-ui-web3-tx-log-core](https://github.com/district0x/district-ui-web3-tx-log-core). 
+* It stores transaction receipts in browser's localstorage, so they're persisted between sessions.   
 
 ## Installation
 Add `[district0x/district-ui-web3-tx "1.0.4"]` into your project.clj  
@@ -33,7 +36,7 @@ You can pass following args to initiate this module:
 re-frame subscriptions provided by this module:
 
 #### `::txs [filter-opts]`
-Returns all transactions. Optionally, you can provide filter opts if you want to filter only transactions with a specific property in 
+Returns map of all transactions. Optionally, you can provide filter opts if you want to filter only transactions with a specific property in 
 tx receipt. For example it can be `:status`, `:from`, `:to`.  
 There are 3 possible transaction statuses:  
 * `:tx.status/success`
