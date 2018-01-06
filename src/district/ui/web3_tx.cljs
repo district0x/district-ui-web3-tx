@@ -9,7 +9,7 @@
 
 (declare start)
 (declare stop)
-(defstate web3
+(defstate web3-tx
   :start (start (:web3-tx (mount/args)))
   :stop (stop))
 

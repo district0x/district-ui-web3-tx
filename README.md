@@ -6,7 +6,7 @@ Clojurescript [mount](https://github.com/tolitius/mount) + [re-frame](https://gi
 that handles [web3](https://github.com/ethereum/web3.js/) smart-contract transactions.  
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.1"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.2"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 **Warning:** district0x modules are still in early stages, therefore API can change in a future.
