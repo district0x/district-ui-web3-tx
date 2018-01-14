@@ -6,10 +6,10 @@ Clojurescript [mount](https://github.com/tolitius/mount) + [re-frame](https://gi
 that helps managing [web3](https://github.com/ethereum/web3.js/) smart-contract transactions in following ways:   
 * Serves as central place to fire re-frame events after all transaction related events. Other modules can then easily hook into those events and provide
 additional features on top of it. Example of such module is [district-ui-web3-tx-log-core](https://github.com/district0x/district-ui-web3-tx-log-core). 
-* It stores transaction receipts in browser's localstorage, so they're persisted between sessions.   
+* It stores transaction data in browser's localstorage, so they're persisted between sessions.   
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.4"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.5"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 **Warning:** district0x modules are still in early stages, therefore API can change in a future.
@@ -18,7 +18,7 @@ Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 This namespace contains web3-tx [mount](https://github.com/tolitius/mount) module.
 
 You can pass following args to initiate this module: 
-* `:disable-using-localstorage?` Pass true if you don't want to store transaction receipts in a browser's localstorage
+* `:disable-using-localstorage?` Pass true if you don't want to store transaction data in a browser's localstorage
 
 
 ```clojure
@@ -37,7 +37,7 @@ re-frame subscriptions provided by this module:
 
 #### `::txs [filter-opts]`
 Returns map of all transactions. Optionally, you can provide filter opts if you want to filter only transactions with a specific property in 
-tx receipt. For example it can be `:status`, `:from`, `:to`.  
+tx data. For example it can be `:status`, `:from`, `:to`.  
 There are 3 possible transaction statuses:  
 * `:tx.status/success`
 * `:tx.status/pending`
@@ -114,11 +114,15 @@ Event fired when there was an error processing a tx. Use this event to hook into
 #### `::tx-receipt`
 Event fired when receipt for a tx was loaded. No matter if tx succeeded or failed. Use this event to hook into event flow.
 
+#### `::tx-loaded`
+After tx-receipt is fired, this module will also load a transaction (`web3.eth.getTransaction`). This event is fired when
+a transaction is loaded. Use this event to hook into event flow.
+
 #### `::add-tx [tx-hash]`
 Adds new transaction hash into db, sets it as `:tx.status/pending`. 
 
 #### `::set-tx [tx-hash tx-data]`
-Updates a transaction. This is called when tx receipt is loaded.
+Updates a transaction.
 
 #### `::remove-tx [tx-hash]`
 Removes transaction.  

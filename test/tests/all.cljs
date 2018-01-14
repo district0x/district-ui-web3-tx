@@ -123,17 +123,20 @@
                 (wait-for [::events/tx-success ::events/tx-error]
                   (wait-for [::events/set-tx]
                     (wait-for [::tx-success]
-                      (is (= @success-txs @txs))
-                      (is (= 0 (count @pending-txs)))
-                      (let [{:keys [:transaction-hash :gas-used :created-on :status] :as tx} (first (vals @txs))]
-                        (is (string? transaction-hash))
-                        (is (pos? gas-used))
-                        (is (instance? js/Date created-on))
-                        (is (= status :tx.status/success))
-                        (is (= tx @(subscribe [::subs/tx transaction-hash])))
+                      (wait-for [::events/tx-loaded ::events/tx-load-failed]
+                        (wait-for [::events/set-tx]
+                          (is (= @success-txs @txs))
+                          (is (= 0 (count @pending-txs)))
+                          (let [{:keys [:transaction-hash :gas-used :created-on :status :gas-price] :as tx} (first (vals @txs))]
+                            (is (string? transaction-hash))
+                            (is (pos? gas-used))
+                            (is (instance? js/Date created-on))
+                            (is (= status :tx.status/success))
+                            (is (= tx @(subscribe [::subs/tx transaction-hash])))
+                            (is (number? gas-price))
 
-                        (dispatch [::clear-localstorage])
-                        (wait-for [::localstorage-cleared])))))))))))))
+                            (dispatch [::clear-localstorage])
+                            (wait-for [::localstorage-cleared])))))))))))))))
 
 
 (deftest tx-error
@@ -171,19 +174,21 @@
                 (wait-for [::events/tx-error ::events/tx-success]
                   (wait-for [::events/set-tx]
                     (wait-for [::tx-error]
-                      (is (= @failed-txs @txs))
-                      (is (= 0 (count @pending-txs)))
+                      (wait-for [::events/tx-loaded]
+                        (wait-for [::events/set-tx]
+                          (is (= @failed-txs @txs))
+                          (is (= 0 (count @pending-txs)))
 
-                      (let [{:keys [:transaction-hash :gas-used :created-on :status]} (last (vals @txs))]
-                        (is (string? transaction-hash))
-                        (is (pos? gas-used))
-                        (is (instance? js/Date created-on))
-                        (is (= status :tx.status/error))
+                          (let [{:keys [:transaction-hash :gas-used :created-on :status :gas-price]} (last (vals @txs))]
+                            (is (string? transaction-hash))
+                            (is (pos? gas-used))
+                            (is (instance? js/Date created-on))
+                            (is (= status :tx.status/error))
+                            (is (number? gas-price))
 
-                        (dispatch [::events/remove-tx transaction-hash])
-                        (wait-for [::events/remove-tx]
-                          (is (= 0 (count @txs)))
+                            (dispatch [::events/remove-tx transaction-hash])
+                            (wait-for [::events/remove-tx]
+                              (is (= 0 (count @txs)))
 
-                          (dispatch [::clear-localstorage])
-                          (wait-for [::localstorage-cleared]))))))))))))))
-
+                              (dispatch [::clear-localstorage])
+                              (wait-for [::localstorage-cleared]))))))))))))))))

@@ -1,13 +1,15 @@
 (ns district.ui.web3-tx.events
   (:require
+    [bignumber.core :as bn]
+    [cljs-web3.eth :as web3-eth]
+    [cljs.spec.alpha :as s]
     [day8.re-frame.forward-events-fx]
     [district.ui.web3-tx.queries :as queries]
     [district.ui.web3.events :as web3-events]
     [district.ui.web3.queries :as web3-queries]
     [district0x.re-frame.spec-interceptors :refer [validate-first-arg validate-args]]
     [district0x.re-frame.web3-fx]
-    [re-frame.core :refer [reg-event-fx trim-v inject-cofx]]
-    [cljs.spec.alpha :as s]))
+    [re-frame.core :refer [reg-event-fx trim-v inject-cofx]]))
 
 (def interceptors [trim-v])
 (s/def ::tx-hash string?)
@@ -37,7 +39,8 @@
                                                    {:id (str :district.ui.web3-tx tx-hash)
                                                     :tx-hash tx-hash
                                                     :on-tx-success [::tx-success {}]
-                                                    :on-tx-error [::tx-error {}]})}}))))
+                                                    :on-tx-error [::tx-error {}]
+                                                    :on-tx-receipt [::tx-receipt {}]})}}))))
 
 
 (reg-event-fx
@@ -84,7 +87,7 @@
       (merge
         {:dispatch [::set-tx transaction-hash tx-receipt]}
         (when on-tx-success
-          {:dispatch-n [(vec (concat on-tx-success tx-receipt))]})))))
+          {:dispatch-n [(vec (concat on-tx-success [tx-receipt]))]})))))
 
 
 (reg-event-fx
@@ -95,28 +98,47 @@
       (merge
         {:dispatch [::set-tx transaction-hash tx-receipt]}
         (when on-tx-error
-          {:dispatch-n [(vec (concat on-tx-error tx-receipt))]})))))
+          {:dispatch-n [(vec (concat on-tx-error [tx-receipt]))]})))))
 
 
 (reg-event-fx
   ::tx-receipt
   interceptors
-  (fn [{:keys [:db]} [{:keys [:on-tx-receipt]} & args]]
-    (when on-tx-receipt
-      {:dispatch-n [(vec (concat on-tx-receipt args))]})))
+  (fn [{:keys [:db]} [{:keys [:on-tx-receipt]} {:keys [:transaction-hash] :as tx-receipt}]]
+    (merge
+      {:web3/call {:web3 (web3-queries/web3 db)
+                   :fns [{:fn web3-eth/get-transaction
+                          :args [transaction-hash]
+                          :on-success [::tx-loaded transaction-hash]
+                          :on-error [::tx-load-failed]}]}}
+      (when on-tx-receipt
+        {:dispatch-n [(vec (concat on-tx-receipt [tx-receipt]))]}))))
+
+
+(reg-event-fx
+  ::tx-loaded
+  interceptors
+  (fn [{:keys [:db]} [tx-hash tx-data]]
+    {:dispatch [::set-tx tx-hash (-> tx-data
+                                   (update :value bn/number)
+                                   (update :gas-price bn/number))]}))
+
+
+(defn- merge-tx-data [db tx-hash tx-data]
+  (let [new-db (queries/merge-tx-data db tx-hash tx-data)]
+    (merge
+      {:db new-db}
+      (when-not (queries/localstorage-disabled? db)
+        {:web3-tx-localstorage (select-keys new-db [:district.ui.web3-tx])}))))
 
 
 (reg-event-fx
   ::add-tx
   [interceptors (validate-first-arg ::tx-hash)]
   (fn [{:keys [:db]} [tx-hash]]
-    (let [new-db (queries/merge-tx-data db tx-hash {:created-on (js/Date.)
-                                                    :transaction-hash tx-hash
-                                                    :status :tx.status/pending})]
-      (merge
-        {:db new-db}
-        (when-not (queries/localstorage-disabled? db)
-          {:web3-tx-localstorage (select-keys new-db [:district.ui.web3-tx])})))))
+    (merge-tx-data db tx-hash {:created-on (js/Date.)
+                               :transaction-hash tx-hash
+                               :status :tx.status/pending})))
 
 
 (reg-event-fx
@@ -125,11 +147,7 @@
                                       :tx-data ::tx-data
                                       :args (s/* any?)))]
   (fn [{:keys [:db]} [tx-hash tx-data]]
-    (let [new-db (queries/merge-tx-data db tx-hash tx-data)]
-      (merge
-        {:db new-db}
-        (when-not (queries/localstorage-disabled? db)
-          {:web3-tx-localstorage (select-keys new-db [:district.ui.web3-tx])})))))
+    (merge-tx-data db tx-hash tx-data)))
 
 
 (reg-event-fx
