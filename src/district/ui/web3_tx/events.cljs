@@ -109,7 +109,7 @@
       {:web3/call {:web3 (web3-queries/web3 db)
                    :fns [{:fn web3-eth/get-transaction
                           :args [transaction-hash]
-                          :on-success [::tx-loaded transaction-hash]
+                          :on-success [::tx-loaded transaction-hash tx-receipt]
                           :on-error [::tx-load-failed]}]}}
       (when on-tx-receipt
         {:dispatch-n [(vec (concat on-tx-receipt [tx-receipt]))]}))))
@@ -118,7 +118,7 @@
 (reg-event-fx
   ::tx-loaded
   interceptors
-  (fn [{:keys [:db]} [tx-hash tx-data]]
+  (fn [{:keys [:db]} [tx-hash tx-receipt tx-data]]
     {:dispatch [::set-tx tx-hash (-> tx-data
                                    (update :value bn/number)
                                    (update :gas-price bn/number))]}))
