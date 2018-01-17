@@ -12,7 +12,35 @@ additional features on top of it. Example of such module is [district-ui-web3-tx
 Add `[district0x/district-ui-web3-tx "1.0.5"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
+## API Overview
+
 **Warning:** district0x modules are still in early stages, therefore API can change in a future.
+
+- [district.ui.web3-tx](#districtuiweb3-tx)
+- [district.ui.web3-tx.subs](#districtuiweb3-txsubs)
+  - [::txs](#txs-sub)
+  - [::tx](#tx-sub)
+- [district.ui.web3-tx.events](#districtuiweb3-txevents)
+  - [::send-tx](#send-tx)
+  - [::watch-pending-txs](#watch-pending-txs)
+  - [::tx-hash](#tx-hash)
+  - [::tx-hash-error](#tx-hash-error)
+  - [::tx-success](#tx-success)
+  - [::tx-error](#tx-error)
+  - [::tx-receipt](#tx-receipt)
+  - [::tx-loaded](#tx-loaded)
+  - [::add-tx](#add-tx)
+  - [::set-tx](#set-tx)
+  - [::remove-tx](#remove-tx)
+  - [::clear-localstorage](#clear-localstorage)
+- [district.ui.web3-tx.queries](#districtuiweb3-txqueries)
+  - [txs](#txs)
+  - [tx](#tx)
+  - [localstorage-disabled?](#localstorage-disabled?)
+  - [merge-tx-data](#merge-tx-data)
+  - [remove-tx](#remove-tx)
+  - [merge-txs](#merge-txs)
+  - [assoc-opt](#assoc-opt)
 
 ## district.ui.web3-tx
 This namespace contains web3-tx [mount](https://github.com/tolitius/mount) module.
@@ -35,7 +63,7 @@ You can pass following args to initiate this module:
 ## district.ui.web3-tx.subs
 re-frame subscriptions provided by this module:
 
-#### `::txs [filter-opts]`
+#### <a name="txs-sub">`txs [filter-opts]`
 Returns map of all transactions. Optionally, you can provide filter opts if you want to filter only transactions with a specific property in 
 tx data. For example it can be `:status`, `:from`, `:to`.  
 There are 3 possible transaction statuses:  
@@ -58,16 +86,13 @@ There are 3 possible transaction statuses:
             "Transaction hash: " tx-hash]))))
 ```
 
-#### `::tx [tx-hash]`
+#### <a name="tx-sub">`tx [tx-hash]`
 Returns transaction with transaction hash `tx-hash`
 
 ## district.ui.web3-tx.events
 re-frame events provided by this module:
 
-#### `::start [opts]`
-Event fired at mount start.
-
-#### `::send-tx [opts]`
+#### <a name="send-tx">`send-tx [opts]`
 Sends Ethereum transaction. Pass same arguments as you'd pass to [web3/call](https://github.com/district0x/re-frame-web3-fx#web3call)
 for state changing contract function. 
 
@@ -82,16 +107,16 @@ for state changing contract function.
                              :on-tx-error [::tx-error]}])
 ```
 
-#### `::watch-pending-txs`
+#### <a name="watch-pending-txs">`watch-pending-txs`
 Starts watching currently pending transactions. This event is fired at mount start.
 
-#### `::tx-hash`
+#### <a name="tx-hash">`tx-hash`
 Event fired when a transaction was sent and transaction hash was obtained. Use this event to hook into event flow.  
 
-#### `::tx-hash-error`
+#### <a name="tx-hash-error">`tx-hash-error`
 Event fired when there was an error sending transaction. Use this event to hook into event flow.
 
-#### `::tx-success`
+#### <a name="tx-success">`tx-success`
 Event fired when transaction was successfully processed. Use this event to hook into event flow.
 
 ```clojure
@@ -108,59 +133,53 @@ Event fired when transaction was successfully processed. Use this event to hook 
      :dispatch-to [::do-something-after-tx-success]}))
 ```
 
-#### `::tx-error`
+#### <a name="tx-error">`tx-error`
 Event fired when there was an error processing a tx. Use this event to hook into event flow.
 
-#### `::tx-receipt`
+#### <a name="tx-receipt">`tx-receipt`
 Event fired when receipt for a tx was loaded. No matter if tx succeeded or failed. Use this event to hook into event flow.
 
-#### `::tx-loaded`
+#### <a name="tx-loaded">`tx-loaded`
 After tx-receipt is fired, this module will also load a transaction (`web3.eth.getTransaction`). This event is fired when
 a transaction is loaded. Use this event to hook into event flow.
 
-#### `::add-tx [tx-hash]`
+#### <a name="add-tx">`add-tx [tx-hash]`
 Adds new transaction hash into db, sets it as `:tx.status/pending`. 
 
-#### `::set-tx [tx-hash tx-data]`
+#### <a name="set-tx">`set-tx [tx-hash tx-data]`
 Updates a transaction.
 
-#### `::remove-tx [tx-hash]`
+#### <a name="remove-tx">`remove-tx [tx-hash]`
 Removes transaction.  
 
-#### `::clear-localstorage`
+#### <a name="clear-localstorage">`clear-localstorage`
 Clears transactions from localstorage.
-
-#### `::stop`
-Cleanup event fired on mount stop.
 
 ## district.ui.web3-tx.queries
 DB queries provided by this module:  
 *You should use them in your events, instead of trying to get this module's 
 data directly with `get-in` into re-frame db.*
 
-#### `txs [db]`
+#### <a name="txs">`txs [db]`
 Works the same way as sub `::txs`
 
-#### `tx [db tx-hash]`
+#### <a name="tx">`tx [db tx-hash]`
 Works the same way as sub `::tx`
 
-#### `localstorage-disabled? [db]`
+#### <a name="localstorage-disabled?">`localstorage-disabled? [db]`
 Returns true is using localstorage is disabled. 
 
-#### `merge-tx-data [db tx-hash tx-data]`
+#### <a name="merge-tx-data">`merge-tx-data [db tx-hash tx-data]`
 Merges tx data into a transaction with hash `tx-hash` and returns new re-frame db.
 
-#### `remove-tx [db tx-hash]`
+#### <a name="remove-tx">`remove-tx [db tx-hash]`
 Removes transaction and returns new re-frame db.
 
-#### `merge-txs [db txs]`
+#### <a name="merge-txs">`merge-txs [db txs]`
 Merges transactions and returns new re-frame db.
 
-#### `assoc-opt [db key value]`
+#### <a name="assoc-opt">`assoc-opt [db key value]`
 Associates an opt into this module state. For internal purposes mainly.
-
-#### `dissoc-web3-tx [db]`
-Cleans up this module from re-frame db. 
 
 ## Dependency on other district UI modules
 * [district-ui-web3](https://github.com/district0x/district-ui-web3)
