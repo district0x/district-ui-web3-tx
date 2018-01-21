@@ -9,7 +9,7 @@ additional features on top of it. Example of such module is [district-ui-web3-tx
 * It stores transaction data in browser's localstorage, so they're persisted between sessions.   
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.5"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.6"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 ## API Overview

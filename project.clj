@@ -1,4 +1,4 @@
-(defproject district0x/district-ui-web3-tx "1.0.5"
+(defproject district0x/district-ui-web3-tx "1.0.6"
   :description "district UI module for handling web3 transactions"
   :url "https://github.com/district0x/district-ui-web3-tx"
   :license {:name "Eclipse Public License"
@@ -24,6 +24,7 @@
 
   :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.2"]
                                   [day8.re-frame/test "0.1.5"]
+                                  [district0x/district-ui-smart-contracts "1.0.1"]
                                   [district0x/district-ui-web3-accounts "1.0.3"]
                                   [org.clojure/clojure "1.8.0"]
                                   [org.clojure/tools.nrepl "0.2.13"]]

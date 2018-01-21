@@ -1,8 +1,10 @@
 (ns district.ui.web3-tx.queries)
 
+(def db-key :district.ui.web3-tx)
+
 (defn txs
   ([db]
-   (-> db :district.ui.web3-tx :txs))
+   (-> db db-key :txs))
   ([db filter-opts]
    (if filter-opts
      (into {} (filter (fn [[_ tx]]
@@ -14,20 +16,20 @@
   (get (txs db) tx-hash))
 
 (defn localstorage-disabled? [db]
-  (-> db :district.ui.web3-tx :disable-using-localstorage?))
+  (-> db db-key :disable-using-localstorage?))
 
 (defn merge-tx-data [db tx-hash tx-data]
-  (update-in db [:district.ui.web3-tx :txs tx-hash] merge tx-data))
+  (update-in db [db-key :txs tx-hash] merge tx-data))
 
 (defn remove-tx [db tx-hash]
-  (update-in db [:district.ui.web3-tx :txs] dissoc tx-hash))
+  (update-in db [db-key :txs] dissoc tx-hash))
 
 (defn merge-txs [db txs]
-  (update-in db [:district.ui.web3-tx :txs] merge txs))
+  (update-in db [db-key :txs] merge txs))
 
 (defn assoc-opt [db key value]
-  (assoc-in db [:district.ui.web3-tx key] value))
+  (assoc-in db [db-key key] value))
 
 (defn dissoc-web3-tx [db]
-  (dissoc db :district.ui.web3-tx))
+  (dissoc db db-key))
 
