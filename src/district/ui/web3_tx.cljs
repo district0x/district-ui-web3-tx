@@ -18,8 +18,7 @@
 
 (defn start [opts]
   (s/assert ::opts opts)
-  (when-not (:disable-using-localstorage? opts)
-    (re-frame-storage/reg-co-fx! :district.ui.web3-tx {:fx :web3-tx-localstorage :cofx :web3-tx-localstorage}))
+  (re-frame-storage/reg-co-fx! :district.ui.web3-tx {:fx :web3-tx-localstorage :cofx :web3-tx-localstorage})
   (dispatch-sync [::events/start opts])
   opts)
 

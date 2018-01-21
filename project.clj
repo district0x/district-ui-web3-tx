@@ -1,4 +1,4 @@
-(defproject district0x/district-ui-web3-tx "1.0.6"
+(defproject district0x/district-ui-web3-tx "1.0.7"
   :description "district UI module for handling web3 transactions"
   :url "https://github.com/district0x/district-ui-web3-tx"
   :license {:name "Eclipse Public License"
