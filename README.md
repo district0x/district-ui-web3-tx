@@ -188,7 +188,7 @@ Associates an opt into this module state. For internal purposes mainly.
 ```bash
 lein deps
 # Start ganache blockchain with 1s block time
-ganache-cli -p 8549 -b 1
+ganache-cli -p 8549 -b 1 --noVMErrorsOnRPCResponse
 # To run tests and rerun on changes
 lein doo chrome tests
 ```

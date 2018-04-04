@@ -10,4 +10,4 @@ before_script:
   - "echo 'Installing Ganache'"
   - npm install -g ganache-cli
   - "echo 'Running Ganache'"
-  - ganache-cli -p 8549 -b 1 > /dev/null &
+  - ganache-cli -p 8549 -b 1 --noVMErrorsOnRPCResponse > /dev/null &
