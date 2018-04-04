@@ -1,4 +1,4 @@
-(defproject district0x/district-ui-web3-tx "1.0.7"
+(defproject district0x/district-ui-web3-tx "1.0.8"
   :description "district UI module for handling web3 transactions"
   :url "https://github.com/district0x/district-ui-web3-tx"
   :license {:name "Eclipse Public License"
@@ -7,7 +7,7 @@
   :dependencies [[akiroz.re-frame/storage "0.1.2"]
                  [cljs-web3 "0.19.0-0-9"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
-                 [district0x.re-frame/web3-fx "1.0.3"]
+                 [district0x.re-frame/web3-fx "1.0.4"]
                  [district0x/bignumber "1.0.1"]
                  [district0x/district-ui-web3 "1.0.1"]
                  [district0x/re-frame-spec-interceptors "1.0.1"]
