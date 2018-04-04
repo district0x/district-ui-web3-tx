@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/district0x/district-ui-web3-tx.svg?branch=master)](https://travis-ci.org/district0x/district-ui-web3-tx)
 
-Clojurescript [mount](https://github.com/tolitius/mount) + [re-frame](https://github.com/Day8/re-frame) module for a district UI,
+Clojurescript [re-mount](https://github.com/district0x/d0x-INFRA/blob/master/re-mount.md) module,
 that helps managing [web3](https://github.com/ethereum/web3.js/) smart-contract transactions in following ways:   
 * Serves as central place to fire re-frame events after all transaction related events. Other modules can then easily hook into those events and provide
 additional features on top of it. Example of such module is [district-ui-web3-tx-log-core](https://github.com/district0x/district-ui-web3-tx-log-core). 
