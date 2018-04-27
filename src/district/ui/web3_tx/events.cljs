@@ -49,16 +49,12 @@
   (fn [{:keys [:db]} [{:keys [:instance :fn :tx-opts :args] :as opts}]]
     {:web3/call
      {:web3 (web3-queries/web3 db)
-      :fns [(merge opts
-                   {:instance instance
-                    :fn fn
-                    :args args
-                    :tx-opts tx-opts
-                    :on-tx-hash [::tx-hash opts]
+      :fns [(merge {:on-tx-hash [::tx-hash opts]
                     :on-tx-hash-error [::tx-hash-error opts]
                     :on-tx-receipt [::tx-receipt opts]
                     :on-tx-success [::tx-success opts]
-                    :on-tx-error [::tx-error opts]})]}}))
+                    :on-tx-error [::tx-error opts]}
+                   opts)]}}))
 
 
 (reg-event-fx
@@ -176,4 +172,3 @@
                                       (str :district.ui.web3-tx tx-hash))
                                     (queries/txs db {:status :tx.status/pending}))}
      :forward-events {:unregister ::web3-created}}))
-

@@ -101,7 +101,7 @@ for state changing contract function.
                              :fn :mint
                              :args [(first accounts) (web3/to-wei 1 :ether)]
                              :tx-opts {:from (first accounts) :gas 4500000}
-                             :on-tx-hash [::tx-hash]
+                             :on-tx-hash-n [[::tx-hash] [::extra]]
                              :on-tx-hash-error [::tx-hash-error]
                              :on-tx-success [::tx-success]
                              :on-tx-error [::tx-error]}])
