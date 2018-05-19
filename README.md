@@ -9,7 +9,7 @@ additional features on top of it. Example of such module is [district-ui-web3-tx
 * It stores transaction data in browser's localstorage, so they're persisted between sessions.   
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.8"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.9"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 ## API Overview
@@ -102,9 +102,13 @@ for state changing contract function.
                              :args [(first accounts) (web3/to-wei 1 :ether)]
                              :tx-opts {:from (first accounts) :gas 4500000}
                              :on-tx-hash [::tx-hash]
+                             :on-tx-hash-n [[::tx-hash]]
                              :on-tx-hash-error [::tx-hash-error]
+                             :on-tx-hash-error-n [[::tx-hash-error]]
                              :on-tx-success [::tx-success]
-                             :on-tx-error [::tx-error]}])
+                             :on-tx-success-n [[::tx-success]]
+                             :on-tx-error [::tx-error]
+                             :on-tx-error-n [[::tx-error]]}])
 ```
 
 #### <a name="watch-pending-txs">`watch-pending-txs`

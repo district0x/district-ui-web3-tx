@@ -55,64 +55,75 @@
                     :args args
                     :tx-opts tx-opts
                     :on-tx-hash [::tx-hash opts]
+                    :on-tx-hash-n [[::tx-hash opts]]
                     :on-tx-hash-error [::tx-hash-error opts]
+                    :on-tx-hash-error-n [[::tx-hash-error opts]]
                     :on-tx-receipt [::tx-receipt opts]
+                    :on-tx-receipt-n [[::tx-receipt opts]]
                     :on-tx-success [::tx-success opts]
-                    :on-tx-error [::tx-error opts]})]}}))
+                    :on-tx-success-n [[::tx-success opts]]
+                    :on-tx-error [::tx-error opts]
+                    :on-tx-error-n [[::tx-error opts]]})]}}))
+
+
+(defn- concat-callback-effects [callback callback-n args]
+  (let [on-tx-hash-all (concat (when callback [callback]) callback-n)]
+    (for [on-tx-hash on-tx-hash-all]
+      (vec (concat on-tx-hash args)))))
 
 
 (reg-event-fx
   ::tx-hash
   interceptors
-  (fn [{:keys [:db]} [{:keys [:on-tx-hash]} tx-hash]]
+  (fn [{:keys [:db]} [{:keys [:on-tx-hash :on-tx-hash-n]} tx-hash]]
     (merge
       {:dispatch [::add-tx tx-hash]}
-      (when on-tx-hash
-        {:dispatch-n [(vec (concat on-tx-hash [tx-hash]))]}))))
+      (when (or on-tx-hash on-tx-hash-n)
+        {:dispatch-n (concat-callback-effects on-tx-hash on-tx-hash-n [tx-hash])}))))
 
 
 (reg-event-fx
   ::tx-hash-error
   interceptors
-  (fn [{:keys [:db]} [{:keys [:on-tx-hash-error]} & args]]
-    (when on-tx-hash-error
-      {:dispatch-n [(vec (concat on-tx-hash-error args))]})))
+  (fn [{:keys [:db]} [{:keys [:on-tx-hash-error :on-tx-hash-error-n]} & args]]
+    (when (or on-tx-hash-error on-tx-hash-error-n)
+      {:dispatch-n (concat-callback-effects on-tx-hash-error on-tx-hash-error-n args)})))
 
 
 (reg-event-fx
   ::tx-success
   interceptors
-  (fn [{:keys [:db]} [{:keys [:on-tx-success]} {:keys [:transaction-hash] :as tx-receipt}]]
+  (fn [{:keys [:db]} [{:keys [:on-tx-success :on-tx-success-n]} {:keys [:transaction-hash] :as tx-receipt}]]
     (let [tx-receipt (assoc tx-receipt :status :tx.status/success)]
       (merge
         {:dispatch [::set-tx transaction-hash tx-receipt]}
-        (when on-tx-success
-          {:dispatch-n [(vec (concat on-tx-success [tx-receipt]))]})))))
+        (when (or on-tx-success on-tx-success-n)
+          {:dispatch-n (concat-callback-effects on-tx-success on-tx-success-n [tx-receipt])})))))
 
 
 (reg-event-fx
   ::tx-error
   interceptors
-  (fn [{:keys [:db]} [{:keys [:on-tx-error]} {:keys [:transaction-hash] :as tx-receipt}]]
+  (fn [{:keys [:db]} [{:keys [:on-tx-error :on-tx-error-n]} {:keys [:transaction-hash] :as tx-receipt}]]
     (let [tx-receipt (assoc tx-receipt :status :tx.status/error)]
       (merge
         {:dispatch [::set-tx transaction-hash tx-receipt]}
-        (when on-tx-error
-          {:dispatch-n [(vec (concat on-tx-error [tx-receipt]))]})))))
+        (when (or on-tx-error on-tx-error-n)
+          {:dispatch-n (concat-callback-effects on-tx-error on-tx-error-n [tx-receipt])})))))
 
 
 (reg-event-fx
   ::tx-receipt
   interceptors
-  (fn [{:keys [:db]} [{:keys [:on-tx-receipt]} {:keys [:transaction-hash] :as tx-receipt}]]
+  (fn [{:keys [:db]} [{:keys [:on-tx-receipt :on-tx-receipt-n]} {:keys [:transaction-hash] :as tx-receipt}]]
     (merge
       {:web3/call {:web3 (web3-queries/web3 db)
                    :fns [{:fn web3-eth/get-transaction
                           :args [transaction-hash]
                           :on-success [::tx-loaded transaction-hash tx-receipt]
                           :on-error [::tx-load-failed]}]}}
-      (when on-tx-receipt
-        {:dispatch-n [(vec (concat on-tx-receipt [tx-receipt]))]}))))
+      (when (or on-tx-receipt on-tx-receipt-n)
+        {:dispatch-n (concat-callback-effects on-tx-receipt on-tx-receipt-n [tx-receipt])}))))
 
 
 (reg-event-fx
