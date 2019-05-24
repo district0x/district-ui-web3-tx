@@ -6,10 +6,11 @@ Clojurescript [re-mount](https://github.com/district0x/d0x-INFRA/blob/master/re-
 that helps managing [web3](https://github.com/ethereum/web3.js/) smart-contract transactions in following ways:   
 * Serves as central place to fire re-frame events after all transaction related events. Other modules can then easily hook into those events and provide
 additional features on top of it. Example of such module is [district-ui-web3-tx-log-core](https://github.com/district0x/district-ui-web3-tx-log-core). 
-* It stores transaction data in browser's localstorage, so they're persisted between sessions.   
+* It stores transaction data in browser's localstorage, so they're persisted between sessions.
+* It loads and uses recommended gas prices from [ETH Gas Station](https://ethgasstation.info/).    
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.9"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.10"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 ## API Overview
@@ -20,6 +21,9 @@ Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 - [district.ui.web3-tx.subs](#districtuiweb3-txsubs)
   - [::txs](#txs-sub)
   - [::tx](#tx-sub)
+  - [::recommended-gas-prices](#recommended-gas-prices-sub)
+  - [::recommended-gas-price](#recommended-gas-price-sub)
+  - [::recommended-gas-price-option](#recommended-gas-price-option-sub)
 - [district.ui.web3-tx.events](#districtuiweb3-txevents)
   - [::send-tx](#send-tx)
   - [::watch-pending-txs](#watch-pending-txs)
@@ -33,6 +37,11 @@ Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
   - [::set-tx](#set-tx)
   - [::remove-tx](#remove-tx)
   - [::clear-localstorage](#clear-localstorage)
+  - [::watch-recommended-gas-prices](#watch-recommended-gas-prices)
+  - [::load-recommended-gas-prices](#load-recommended-gas-prices)
+  - [::set-recommended-gas-prices](#set-recommended-gas-prices)
+  - [::set-recommended-gas-price-option](#set-recommended-gas-price-option)
+  - [::stop-watching-recommended-gas-prices](#stop-watching-recommended-gas-prices)
 - [district.ui.web3-tx.queries](#districtuiweb3-txqueries)
   - [txs](#txs)
   - [tx](#tx)
@@ -40,6 +49,11 @@ Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
   - [merge-tx-data](#merge-tx-data)
   - [remove-tx](#remove-tx)
   - [merge-txs](#merge-txs)
+  - [merge-recommended-gas-prices](#merge-recommended-gas-prices)
+  - [recommended-gas-prices](#recommended-gas-prices)
+  - [assoc-recommended-gas-price-option](#assoc-recommended-gas-price-option)
+  - [recommended-gas-price-option](#recommended-gas-price-option)
+  - [recommended-gas-price](#recommended-gas-price)
   - [assoc-opt](#assoc-opt)
 
 ## district.ui.web3-tx
@@ -47,8 +61,10 @@ This namespace contains web3-tx [mount](https://github.com/tolitius/mount) modul
 
 You can pass following args to initiate this module: 
 * `:disable-using-localstorage?` Pass true if you don't want to store transaction data in a browser's localstorage
-
-
+* `:disable-loading-recommended-gas-prices?` Pass true if you don't want to load recommended gas prices
+* `:recommended-gas-prices-load-interval` Interval at which recommended gas prices should be loaded. Default 30000 (30 seconds)
+* `:recommended-gas-price-option` Option which should be used from recommended gas prices. Possible options: `:fastest`, `:fast`, `:average`, `:safe-low`. Default: `:average`
+ 
 ```clojure
   (ns my-district.core
     (:require [mount.core :as mount]
@@ -56,7 +72,8 @@ You can pass following args to initiate this module:
               
   (-> (mount/with-args
         {:web3 {:url "https://mainnet.infura.io/"}
-         :web3-tx {:disable-using-localstorage? true}})
+         :web3-tx {:disable-using-localstorage? true
+                   :recommended-gas-price-option :safe-low}})
     (mount/start))
 ```
 
@@ -88,6 +105,40 @@ There are 3 possible transaction statuses:
 
 #### <a name="tx-sub">`tx [tx-hash]`
 Returns transaction with transaction hash `tx-hash`
+
+#### <a name="recommended-gas-prices-sub">`recommended-gas-prices`
+Returns recommended has prices loaded from [ETH Gas Station](https://ethgasstation.info/).
+
+```clojure
+@(subscribe [::subs/recommended-gas-prices])
+;; => {
+;; :fast 9000000000
+;; :fastest 20000000000
+;; :speed 0.9819364005608542
+;; :safe-low 1000000000
+;; :avg-wait 1.5
+;; :fastest-wait 0.4 
+;; :safe-low-wait 14 
+;; :block-num 7820908 
+;; :average 3000000000 
+;; :fast-wait 0.5
+;; :block-time 12.660377358490566}
+```
+
+#### <a name="recommended-gas-price-sub">`recommended-gas-price`
+Returns recommended has price at key `recommended-gas-price-option``.
+```clojure
+@(subscribe [::subs/recommended-gas-price])
+;; => 3000000000
+```
+
+#### <a name="recommended-gas-price-option-sub">`recommended-gas-price-option`
+Returns option which will be used for gas prices.
+
+```clojure
+@(subscribe [::subs/recommended-gas-price-option])
+;; => :fastest
+```
 
 ## district.ui.web3-tx.events
 re-frame events provided by this module:
@@ -159,6 +210,21 @@ Removes transaction.
 #### <a name="clear-localstorage">`clear-localstorage`
 Clears transactions from localstorage.
 
+#### <a name="watch-recommended-gas-prices">`watch-recommended-gas-prices`
+Will start loading recommended gas prices at configured interval. 
+
+#### <a name="load-recommended-gas-prices">`load-recommended-gas-prices`
+Loads recommended gas prices from [ETH Gas Station](https://ethgasstation.info/) and sets results into re-frame db.
+
+#### <a name="set-recommended-gas-prices">`set-recommended-gas-prices`
+Sets results from `load-recommended-gas-prices` into re-frame db.
+
+#### <a name="set-recommended-gas-price-option">`set-recommended-gas-price-option`
+Sets option from recommended gas prices, that will be used for transaction gas price.
+
+#### <a name="stop-watching-recommended-gas-prices">`stop-watching-recommended-gas-prices`
+Stops loading interval for recommended gas prices.
+
 ## district.ui.web3-tx.queries
 DB queries provided by this module:  
 *You should use them in your events, instead of trying to get this module's 
@@ -181,6 +247,21 @@ Removes transaction and returns new re-frame db.
 
 #### <a name="merge-txs">`merge-txs [db txs]`
 Merges transactions and returns new re-frame db.
+
+#### <a name="merge-recommended-gas-prices">`merge-recommended-gas-prices [db recommended-gas-prices]`
+Merges recommended gas prices and returns new re-frame db.
+
+#### <a name="recommended-gas-prices">`recommended-gas-prices [db]`
+Works the same way as sub `::recommended-gas-prices`.
+
+#### <a name="assoc-recommended-gas-price-option">`assoc-recommended-gas-price-option [db option]`
+Associates gas price option that will be used for transaction gas price.
+
+#### <a name="recommended-gas-price-option">`recommended-gas-price-option [db]`
+Works the same way as sub `::recommended-gas-price-option`.
+
+#### <a name="recommended-gas-price">`recommended-gas-price [db]`
+Works the same way as sub `::recommended-gas-price`.
 
 #### <a name="assoc-opt">`assoc-opt [db key value]`
 Associates an opt into this module state. For internal purposes mainly.

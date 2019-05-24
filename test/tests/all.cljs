@@ -68,10 +68,13 @@
           txs (subscribe [::subs/txs])
           pending-txs (subscribe [::subs/txs {:status :tx.status/pending}])
           success-txs (subscribe [::subs/txs {:status :tx.status/success}])
-          accounts (subscribe [::accounts-subs/accounts])]
+          accounts (subscribe [::accounts-subs/accounts])
+          recommended-gas-price (subscribe [::subs/recommended-gas-price])
+          recommended-gas-prices (subscribe [::subs/recommended-gas-prices])]
 
       (-> (mount/with-args
             {:web3 {:url "http://localhost:8549"}
+             :web3-tx {:recommended-gas-price-option :safe-low}
              :smart-contracts {:disable-loading-at-start? true
                                :contracts {:mintable-token mintable-token}}})
         (mount/start))
@@ -108,6 +111,8 @@
                               (is (= status :tx.status/success))
                               (is (= tx @(subscribe [::subs/tx transaction-hash])))
                               (is (number? gas-price))
+                              (is (= @recommended-gas-price gas-price (:safe-low @recommended-gas-prices)))
+
 
                               (dispatch [::clear-localstorage])
                               (wait-for [::localstorage-cleared]))))))))))))))))
@@ -119,10 +124,12 @@
           txs (subscribe [::subs/txs])
           pending-txs (subscribe [::subs/txs {:status :tx.status/pending}])
           failed-txs (subscribe [::subs/txs {:status :tx.status/error}])
-          accounts (subscribe [::accounts-subs/accounts])]
+          accounts (subscribe [::accounts-subs/accounts])
+          recommended-gas-price (subscribe [::subs/recommended-gas-price])]
 
       (-> (mount/with-args
             {:web3 {:url "http://localhost:8549"}
+             :web3-tx {:disable-loading-recommended-gas-prices? true}
              :smart-contracts {:disable-loading-at-start? true
                                :contracts {:mintable-token mintable-token}}})
         (mount/start))
@@ -159,6 +166,7 @@
                               (is (instance? js/Date created-on))
                               (is (= status :tx.status/error))
                               (is (number? gas-price))
+                              (is (nil? @recommended-gas-price))
 
                               (dispatch [::events/remove-tx transaction-hash])
                               (wait-for [::events/remove-tx]

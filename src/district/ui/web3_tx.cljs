@@ -13,8 +13,16 @@
   :start (start (:web3-tx (mount/args)))
   :stop (stop))
 
+
 (s/def ::disable-using-localstorage? boolean?)
-(s/def ::opts (s/nilable (s/keys :opt-un [::disable-using-localstorage?])))
+(s/def ::disable-loading-recommended-gas-prices? boolean?)
+(s/def ::recommended-gas-prices-load-interval number?)
+(s/def ::recommended-gas-price-option #{:fast :fastest :safe-low :average})
+
+(s/def ::opts (s/nilable (s/keys :opt-un [::disable-using-localstorage?
+                                          ::disable-loading-recommended-gas-prices?
+                                          ::recommended-gas-prices-load-interval
+                                          ::recommended-gas-price-option])))
 
 (defn start [opts]
   (s/assert ::opts opts)

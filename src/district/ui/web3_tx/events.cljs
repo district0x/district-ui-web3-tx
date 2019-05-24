@@ -1,12 +1,18 @@
 (ns district.ui.web3-tx.events
   (:require
+    [ajax.core :as ajax]
     [bignumber.core :as bn]
+    [camel-snake-kebab.core :as cs]
+    [camel-snake-kebab.extras :refer [transform-keys]]
     [cljs-web3.eth :as web3-eth]
     [cljs.spec.alpha :as s]
     [day8.re-frame.forward-events-fx]
+    [day8.re-frame.http-fx]
+    [district.cljs-utils :as cljs-utils]
     [district.ui.web3-tx.queries :as queries]
     [district.ui.web3.events :as web3-events]
     [district.ui.web3.queries :as web3-queries]
+    [district0x.re-frame.interval-fx]
     [district0x.re-frame.spec-interceptors :refer [validate-first-arg validate-args]]
     [district0x.re-frame.web3-fx]
     [re-frame.core :refer [reg-event-fx trim-v inject-cofx]]))
@@ -15,17 +21,26 @@
 (s/def ::tx-hash string?)
 (s/def ::tx-data map?)
 
+
 (reg-event-fx
   ::start
   [interceptors (inject-cofx :web3-tx-localstorage)]
-  (fn [{:keys [:db :web3-tx-localstorage]} [{:keys [:disable-using-localstorage?]}]]
+  (fn [{:keys [:db :web3-tx-localstorage]} [{:keys [:disable-using-localstorage?
+                                                    :recommended-gas-price-option
+                                                    :recommended-gas-prices-load-interval
+                                                    :disable-loading-recommended-gas-prices?]}]]
     (let [txs (if disable-using-localstorage? {} (queries/txs web3-tx-localstorage))]
-      {:db (-> db
-             (queries/merge-txs txs)
-             (queries/assoc-opt :disable-using-localstorage? disable-using-localstorage?))
-       :forward-events {:register ::web3-created
-                        :events #{::web3-events/web3-created}
-                        :dispatch-to [::watch-pending-txs]}})))
+      (merge
+       {:db (-> db
+              (queries/merge-txs txs)
+              (queries/assoc-opt :disable-using-localstorage? disable-using-localstorage?)
+              (queries/assoc-opt :recommended-gas-prices-load-interval (or recommended-gas-prices-load-interval 30000))
+              (queries/assoc-recommended-gas-price-option (or recommended-gas-price-option :average)))
+        :forward-events {:register ::web3-created
+                         :events #{::web3-events/web3-created}
+                         :dispatch-to [::watch-pending-txs]}}
+       (when-not disable-loading-recommended-gas-prices?
+         {:dispatch [::watch-recommended-gas-prices]})))))
 
 
 (reg-event-fx
@@ -44,6 +59,59 @@
 
 
 (reg-event-fx
+  ::watch-recommended-gas-prices
+  interceptors
+  (fn [{:keys [:db]}]
+    (let []
+      {:dispatch [::load-recommended-gas-prices]
+       :dispatch-interval {:dispatch [::load-recommended-gas-prices]
+                           :id ::recommended-gas-prices
+                           :ms (queries/opt db :recommended-gas-prices-load-interval)}})))
+
+
+(reg-event-fx
+  ::stop-watching-recommended-gas-prices
+  interceptors
+  (fn []
+    {:clear-interval {:id ::recommended-gas-prices}}))
+
+
+(reg-event-fx
+  ::load-recommended-gas-prices
+  interceptors
+  (fn [{:keys [:db]}]
+    (let []
+      {:http-xhrio {:method :get
+                    :uri "https://ethgasstation.info/json/ethgasAPI.json"
+                    :timeout 30000
+                    :response-format (ajax/json-response-format {:keywords? true})
+                    :on-success [::set-recommended-gas-prices]
+                    :on-failure [::recommended-gas-prices-load-failed]}})))
+
+
+(reg-event-fx
+  ::set-recommended-gas-prices
+  interceptors
+  (fn [{:keys [:db]} [recommended-gas-prices]]
+    {:db (->> recommended-gas-prices
+           (transform-keys cs/->kebab-case)
+           (cljs-utils/map-vals-at-keys (partial * 1e8) [:fastest :fast :average :safe-low])
+           (queries/merge-recommended-gas-prices db))}))
+
+
+(reg-event-fx
+  ::set-recommended-gas-price-option
+  [interceptors (validate-first-arg :district.ui.web3-tx/recommended-gas-price-option)]
+  (fn [{:keys [:db]} [recommended-gas-price-option]]
+    {:db (queries/assoc-recommended-gas-price-option db recommended-gas-price-option)}))
+
+
+(reg-event-fx
+  ::recommended-gas-prices-load-failed
+  (constantly nil))
+
+
+(reg-event-fx
   ::send-tx
   interceptors
   (fn [{:keys [:db]} [{:keys [:instance :fn :tx-opts :args] :as opts}]]
@@ -53,17 +121,14 @@
                    {:instance instance
                     :fn fn
                     :args args
-                    :tx-opts tx-opts
+                    :tx-opts (merge
+                               {:gas-price (queries/recommended-gas-price db)}
+                               tx-opts)
                     :on-tx-hash [::tx-hash opts]
-                    :on-tx-hash-n [[::tx-hash opts]]
                     :on-tx-hash-error [::tx-hash-error opts]
-                    :on-tx-hash-error-n [[::tx-hash-error opts]]
                     :on-tx-receipt [::tx-receipt opts]
-                    :on-tx-receipt-n [[::tx-receipt opts]]
                     :on-tx-success [::tx-success opts]
-                    :on-tx-success-n [[::tx-success opts]]
-                    :on-tx-error [::tx-error opts]
-                    :on-tx-error-n [[::tx-error opts]]})]}}))
+                    :on-tx-error [::tx-error opts]})]}}))
 
 
 (defn- concat-callback-effects [callback callback-n args]
@@ -186,5 +251,6 @@
      :web3/stop-watching {:ids (map (fn [[tx-hash]]
                                       (str :district.ui.web3-tx tx-hash))
                                     (queries/txs db {:status :tx.status/pending}))}
-     :forward-events {:unregister ::web3-created}}))
+     :forward-events {:unregister ::web3-created}
+     :dispatch [::stop-watching-recommended-gas-prices]}))
 

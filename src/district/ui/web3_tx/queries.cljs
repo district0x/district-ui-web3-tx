@@ -27,6 +27,24 @@
 (defn merge-txs [db txs]
   (update-in db [db-key :txs] merge txs))
 
+(defn merge-recommended-gas-prices [db recommended-gas-prices]
+  (update-in db [db-key :recommended-gas-prices] merge recommended-gas-prices))
+
+(defn recommended-gas-prices [db]
+  (get-in db [db-key :recommended-gas-prices]))
+
+(defn assoc-recommended-gas-price-option [db gas-price-option]
+  (assoc-in db [db-key :gas-price-option] gas-price-option))
+
+(defn recommended-gas-price-option [db]
+  (get-in db [db-key :gas-price-option]))
+
+(defn recommended-gas-price [db]
+  (get (recommended-gas-prices db) (recommended-gas-price-option db)))
+
+(defn opt [db key]
+  (get-in db [db-key key]))
+
 (defn assoc-opt [db key value]
   (assoc-in db [db-key key] value))
 

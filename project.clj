@@ -1,15 +1,20 @@
-(defproject district0x/district-ui-web3-tx "1.0.9"
+(defproject district0x/district-ui-web3-tx "1.0.10"
   :description "district UI module for handling web3 transactions"
   :url "https://github.com/district0x/district-ui-web3-tx"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[akiroz.re-frame/storage "0.1.2"]
+                 [camel-snake-kebab "0.4.0"]
+                 [cljs-ajax "0.8.0"]
                  [cljs-web3 "0.19.0-0-9"]
                  [day8.re-frame/forward-events-fx "0.0.5"]
+                 [day8.re-frame/http-fx "0.1.6"]
                  [district0x.re-frame/web3-fx "1.0.5"]
                  [district0x/bignumber "1.0.1"]
+                 [district0x/district-cljs-utils "1.0.4"]
                  [district0x/district-ui-web3 "1.0.1"]
+                 [district0x/re-frame-interval-fx "1.0.2"]
                  [district0x/re-frame-spec-interceptors "1.0.1"]
                  [mount "0.1.11"]
                  [org.clojure/clojurescript "1.9.946"]
