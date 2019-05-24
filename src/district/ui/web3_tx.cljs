@@ -4,6 +4,7 @@
     [cljs.spec.alpha :as s]
     [district.ui.web3-tx.events :as events]
     [district.ui.web3]
+    [district.ui.window-focus]
     [mount.core :as mount :refer [defstate]]
     [re-frame.core :refer [dispatch-sync]]))
 

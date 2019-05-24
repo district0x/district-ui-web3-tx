@@ -12,6 +12,7 @@
     [district.ui.web3-tx.queries :as queries]
     [district.ui.web3.events :as web3-events]
     [district.ui.web3.queries :as web3-queries]
+    [district.ui.window-focus.queries :as w-focus-queries]
     [district0x.re-frame.interval-fx]
     [district0x.re-frame.spec-interceptors :refer [validate-first-arg validate-args]]
     [district0x.re-frame.web3-fx]
@@ -80,13 +81,13 @@
   ::load-recommended-gas-prices
   interceptors
   (fn [{:keys [:db]}]
-    (let []
-      {:http-xhrio {:method :get
-                    :uri "https://ethgasstation.info/json/ethgasAPI.json"
-                    :timeout 30000
-                    :response-format (ajax/json-response-format {:keywords? true})
-                    :on-success [::set-recommended-gas-prices]
-                    :on-failure [::recommended-gas-prices-load-failed]}})))
+    (when (w-focus-queries/focused? db)
+     {:http-xhrio {:method :get
+                   :uri "https://ethgasstation.info/json/ethgasAPI.json"
+                   :timeout 30000
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success [::set-recommended-gas-prices]
+                   :on-failure [::recommended-gas-prices-load-failed]}})))
 
 
 (reg-event-fx

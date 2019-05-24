@@ -1,4 +1,4 @@
-(defproject district0x/district-ui-web3-tx "1.0.10"
+(defproject district0x/district-ui-web3-tx "1.0.11"
   :description "district UI module for handling web3 transactions"
   :url "https://github.com/district0x/district-ui-web3-tx"
   :license {:name "Eclipse Public License"
@@ -14,6 +14,7 @@
                  [district0x/bignumber "1.0.1"]
                  [district0x/district-cljs-utils "1.0.4"]
                  [district0x/district-ui-web3 "1.0.1"]
+                 [district0x/district-ui-window-focus "1.0.0"]
                  [district0x/re-frame-interval-fx "1.0.2"]
                  [district0x/re-frame-spec-interceptors "1.0.1"]
                  [mount "0.1.11"]

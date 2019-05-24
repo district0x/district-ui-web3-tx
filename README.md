@@ -10,7 +10,7 @@ additional features on top of it. Example of such module is [district-ui-web3-tx
 * It loads and uses recommended gas prices from [ETH Gas Station](https://ethgasstation.info/).    
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.10"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.11"]` into your project.clj  
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 ## API Overview
