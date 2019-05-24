@@ -12,10 +12,10 @@
     [district.ui.web3-tx.queries :as queries]
     [district.ui.web3.events :as web3-events]
     [district.ui.web3.queries :as web3-queries]
-    [district.ui.window-focus.queries :as w-focus-queries]
     [district0x.re-frame.interval-fx]
     [district0x.re-frame.spec-interceptors :refer [validate-first-arg validate-args]]
     [district0x.re-frame.web3-fx]
+    [district0x.re-frame.window-fx]
     [re-frame.core :refer [reg-event-fx trim-v inject-cofx]]))
 
 (def interceptors [trim-v])
@@ -32,16 +32,20 @@
                                                     :disable-loading-recommended-gas-prices?]}]]
     (let [txs (if disable-using-localstorage? {} (queries/txs web3-tx-localstorage))]
       (merge
-       {:db (-> db
-              (queries/merge-txs txs)
-              (queries/assoc-opt :disable-using-localstorage? disable-using-localstorage?)
-              (queries/assoc-opt :recommended-gas-prices-load-interval (or recommended-gas-prices-load-interval 30000))
-              (queries/assoc-recommended-gas-price-option (or recommended-gas-price-option :average)))
-        :forward-events {:register ::web3-created
-                         :events #{::web3-events/web3-created}
-                         :dispatch-to [::watch-pending-txs]}}
-       (when-not disable-loading-recommended-gas-prices?
-         {:dispatch [::watch-recommended-gas-prices]})))))
+        {:db (-> db
+               (queries/merge-txs txs)
+               (queries/assoc-opt :disable-using-localstorage? disable-using-localstorage?)
+               (queries/assoc-opt :recommended-gas-prices-load-interval (or recommended-gas-prices-load-interval 30000))
+               (queries/assoc-recommended-gas-price-option (or recommended-gas-price-option :average)))
+         :forward-events {:register ::web3-created
+                          :events #{::web3-events/web3-created}
+                          :dispatch-to [::watch-pending-txs]}}
+        (when-not disable-loading-recommended-gas-prices?
+          {:dispatch [::watch-recommended-gas-prices]
+           :window/on-focus {:dispatch [::watch-recommended-gas-prices]
+                             :id ::watch-recommended-gas-prices}
+           :window/on-blur {:dispatch [::stop-watching-recommended-gas-prices]
+                            :id ::stop-watching-recommended-gas-prices}})))))
 
 
 (reg-event-fx
@@ -63,11 +67,11 @@
   ::watch-recommended-gas-prices
   interceptors
   (fn [{:keys [:db]}]
-    (let []
-      {:dispatch [::load-recommended-gas-prices]
-       :dispatch-interval {:dispatch [::load-recommended-gas-prices]
-                           :id ::recommended-gas-prices
-                           :ms (queries/opt db :recommended-gas-prices-load-interval)}})))
+    {:dispatch [::load-recommended-gas-prices]
+     :clear-interval {:id ::recommended-gas-prices}
+     :dispatch-interval {:dispatch [::load-recommended-gas-prices]
+                         :id ::recommended-gas-prices
+                         :ms (queries/opt db :recommended-gas-prices-load-interval)}}))
 
 
 (reg-event-fx
@@ -81,13 +85,12 @@
   ::load-recommended-gas-prices
   interceptors
   (fn [{:keys [:db]}]
-    (when (w-focus-queries/focused? db)
-     {:http-xhrio {:method :get
-                   :uri "https://ethgasstation.info/json/ethgasAPI.json"
-                   :timeout 30000
-                   :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success [::set-recommended-gas-prices]
-                   :on-failure [::recommended-gas-prices-load-failed]}})))
+    {:http-xhrio {:method :get
+                  :uri "https://ethgasstation.info/json/ethgasAPI.json"
+                  :timeout 30000
+                  :response-format (ajax/json-response-format {:keywords? true})
+                  :on-success [::set-recommended-gas-prices]
+                  :on-failure [::recommended-gas-prices-load-failed]}}))
 
 
 (reg-event-fx
@@ -253,5 +256,7 @@
                                       (str :district.ui.web3-tx tx-hash))
                                     (queries/txs db {:status :tx.status/pending}))}
      :forward-events {:unregister ::web3-created}
-     :dispatch [::stop-watching-recommended-gas-prices]}))
+     :dispatch [::stop-watching-recommended-gas-prices]
+     :window/stop-on-focus {:id ::watch-recommended-gas-prices}
+     :window/stop-on-blur {:id ::stop-watching-recommended-gas-prices}}))
 
