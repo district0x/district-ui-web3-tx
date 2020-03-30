@@ -1,16 +1,16 @@
 # district-ui-web3-tx
 
-[![Build Status](https://travis-ci.org/district0x/district-ui-web3-tx.svg?branch=master)](https://travis-ci.org/district0x/district-ui-web3-tx)
+[![CircleCI](https://circleci.com/gh/district0x/district-ui-web3-tx.svg?style=svg)](https://circleci.com/gh/district0x/district-ui-web3-tx)
 
 Clojurescript [re-mount](https://github.com/district0x/d0x-INFRA/blob/master/re-mount.md) module,
-that helps managing [web3](https://github.com/ethereum/web3.js/) smart-contract transactions in following ways:   
+that helps managing [web3](https://github.com/ethereum/web3.js/) smart-contract transactions in following ways:
 * Serves as central place to fire re-frame events after all transaction related events. Other modules can then easily hook into those events and provide
-additional features on top of it. Example of such module is [district-ui-web3-tx-log-core](https://github.com/district0x/district-ui-web3-tx-log-core). 
+additional features on top of it. Example of such module is [district-ui-web3-tx-log-core](https://github.com/district0x/district-ui-web3-tx-log-core).
 * It stores transaction data in browser's localstorage, so they're persisted between sessions.
-* It loads and uses recommended gas prices from [ETH Gas Station](https://ethgasstation.info/).    
+* It loads and uses recommended gas prices from [ETH Gas Station](https://ethgasstation.info/).
 
 ## Installation
-Add `[district0x/district-ui-web3-tx "1.0.11"]` into your project.clj  
+Add `[district0x/district-ui-web3-tx "1.0.11"]` into your project.clj
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
 ## API Overview
@@ -59,17 +59,17 @@ Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 ## district.ui.web3-tx
 This namespace contains web3-tx [mount](https://github.com/tolitius/mount) module.
 
-You can pass following args to initiate this module: 
+You can pass following args to initiate this module:
 * `:disable-using-localstorage?` Pass true if you don't want to store transaction data in a browser's localstorage
 * `:disable-loading-recommended-gas-prices?` Pass true if you don't want to load recommended gas prices
 * `:recommended-gas-prices-load-interval` Interval at which recommended gas prices should be loaded. Default 30000 (30 seconds)
 * `:recommended-gas-price-option` Option which should be used from recommended gas prices. Possible options: `:fastest`, `:fast`, `:average`, `:safe-low`. Default: `:average`
- 
+
 ```clojure
   (ns my-district.core
     (:require [mount.core :as mount]
               [district.ui.web3-tx]))
-              
+
   (-> (mount/with-args
         {:web3 {:url "https://mainnet.infura.io/"}
          :web3-tx {:disable-using-localstorage? true
@@ -81,9 +81,9 @@ You can pass following args to initiate this module:
 re-frame subscriptions provided by this module:
 
 #### <a name="txs-sub">`txs [filter-opts]`
-Returns map of all transactions. Optionally, you can provide filter opts if you want to filter only transactions with a specific property in 
-tx data. For example it can be `:status`, `:from`, `:to`.  
-There are 3 possible transaction statuses:  
+Returns map of all transactions. Optionally, you can provide filter opts if you want to filter only transactions with a specific property in
+tx data. For example it can be `:status`, `:from`, `:to`.
+There are 3 possible transaction statuses:
 * `:tx.status/success`
 * `:tx.status/pending`
 * `:tx.status/error`
@@ -92,13 +92,13 @@ There are 3 possible transaction statuses:
 (ns my-district.core
     (:require [mount.core :as mount]
               [district.ui.web3-tx :as subs]))
-  
+
   (defn home-page []
-    (let [pending-txs (subscribe [::subs/txs {:status :tx.status/pending}])]  
+    (let [pending-txs (subscribe [::subs/txs {:status :tx.status/pending}])]
       (fn []
         [:div "Your pending transactions: "]
         (for [[tx-hash tx] @pending-txs]
-          [:div 
+          [:div
             {:key tx-hash}
             "Transaction hash: " tx-hash]))))
 ```
@@ -117,10 +117,10 @@ Returns recommended has prices loaded from [ETH Gas Station](https://ethgasstati
 ;; :speed 0.9819364005608542
 ;; :safe-low 1000000000
 ;; :avg-wait 1.5
-;; :fastest-wait 0.4 
-;; :safe-low-wait 14 
-;; :block-num 7820908 
-;; :average 3000000000 
+;; :fastest-wait 0.4
+;; :safe-low-wait 14
+;; :block-num 7820908
+;; :average 3000000000
 ;; :fast-wait 0.5
 ;; :block-time 12.660377358490566}
 ```
@@ -145,7 +145,7 @@ re-frame events provided by this module:
 
 #### <a name="send-tx">`send-tx [opts]`
 Sends Ethereum transaction. Pass same arguments as you'd pass to [web3/call](https://github.com/district0x/re-frame-web3-fx#web3call)
-for state changing contract function. 
+for state changing contract function.
 
 ```clojure
 (dispatch [::events/send-tx {:instance MintableToken
@@ -166,7 +166,7 @@ for state changing contract function.
 Starts watching currently pending transactions. This event is fired at mount start.
 
 #### <a name="tx-hash">`tx-hash`
-Event fired when a transaction was sent and transaction hash was obtained. Use this event to hook into event flow.  
+Event fired when a transaction was sent and transaction hash was obtained. Use this event to hook into event flow.
 
 #### <a name="tx-hash-error">`tx-hash-error`
 Event fired when there was an error sending transaction. Use this event to hook into event flow.
@@ -179,7 +179,7 @@ Event fired when transaction was successfully processed. Use this event to hook 
     (:require [district.ui.web3-tx.events :as tx-events]
               [re-frame.core :refer [reg-event-fx]]
               [day8.re-frame.forward-events-fx]))
-              
+
 (reg-event-fx
   ::my-event
   (fn []
@@ -199,19 +199,19 @@ After tx-receipt is fired, this module will also load a transaction (`web3.eth.g
 a transaction is loaded. Use this event to hook into event flow.
 
 #### <a name="add-tx">`add-tx [tx-hash]`
-Adds new transaction hash into db, sets it as `:tx.status/pending`. 
+Adds new transaction hash into db, sets it as `:tx.status/pending`.
 
 #### <a name="set-tx">`set-tx [tx-hash tx-data]`
 Updates a transaction.
 
 #### <a name="remove-tx">`remove-tx [tx-hash]`
-Removes transaction.  
+Removes transaction.
 
 #### <a name="clear-localstorage">`clear-localstorage`
 Clears transactions from localstorage.
 
 #### <a name="watch-recommended-gas-prices">`watch-recommended-gas-prices`
-Will start loading recommended gas prices at configured interval. 
+Will start loading recommended gas prices at configured interval.
 
 #### <a name="load-recommended-gas-prices">`load-recommended-gas-prices`
 Loads recommended gas prices from [ETH Gas Station](https://ethgasstation.info/) and sets results into re-frame db.
@@ -226,8 +226,8 @@ Sets option from recommended gas prices, that will be used for transaction gas p
 Stops loading interval for recommended gas prices.
 
 ## district.ui.web3-tx.queries
-DB queries provided by this module:  
-*You should use them in your events, instead of trying to get this module's 
+DB queries provided by this module:
+*You should use them in your events, instead of trying to get this module's
 data directly with `get-in` into re-frame db.*
 
 #### <a name="txs">`txs [db]`
@@ -237,7 +237,7 @@ Works the same way as sub `::txs`
 Works the same way as sub `::tx`
 
 #### <a name="localstorage-disabled?">`localstorage-disabled? [db]`
-Returns true is using localstorage is disabled. 
+Returns true is using localstorage is disabled.
 
 #### <a name="merge-tx-data">`merge-tx-data [db tx-hash tx-data]`
 Merges tx data into a transaction with hash `tx-hash` and returns new re-frame db.

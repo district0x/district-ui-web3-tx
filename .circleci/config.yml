@@ -6,7 +6,7 @@ jobs:
     docker:
       - image: district0x/cljs-dev:e701583
       - image: trufflesuite/ganache-cli:v6.7.0
-        command: [-d, -m district0x, -p 8549, -l 80000000, --noVMErrorsOnRPCResponse, --b 1
+        command: [-d, -m district0x, -p 8549, -l 80000000, --noVMErrorsOnRPCResponse, --b 1]
     steps:
       - checkout
       - restore_cache:
