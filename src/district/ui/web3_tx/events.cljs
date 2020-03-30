@@ -1,22 +1,19 @@
 (ns district.ui.web3-tx.events
-  (:require
-    [ajax.core :as ajax]
-    [bignumber.core :as bn]
-    [camel-snake-kebab.core :as cs]
-    [camel-snake-kebab.extras :refer [transform-keys]]
-    [cljs-web3.eth :as web3-eth]
-    [cljs.spec.alpha :as s]
-    [day8.re-frame.forward-events-fx]
-    [day8.re-frame.http-fx]
-    [district.cljs-utils :as cljs-utils]
-    [district.ui.web3-tx.queries :as queries]
-    [district.ui.web3.events :as web3-events]
-    [district.ui.web3.queries :as web3-queries]
-    [district0x.re-frame.interval-fx]
-    [district0x.re-frame.spec-interceptors :refer [validate-first-arg validate-args]]
-    [district0x.re-frame.web3-fx]
-    [district0x.re-frame.window-fx]
-    [re-frame.core :refer [reg-event-fx trim-v inject-cofx]]))
+  (:require [ajax.core :as ajax]
+            [bignumber.core :as bn]
+            [camel-snake-kebab.core :as cs]
+            [camel-snake-kebab.extras :refer [transform-keys]]
+            [cljs-web3.eth :as web3-eth]
+            [cljs.spec.alpha :as s]
+            [district.cljs-utils :as cljs-utils]
+            [district.ui.web3-tx.queries :as queries]
+            [district.ui.web3.events :as web3-events]
+            [district.ui.web3.queries :as web3-queries]
+            [district0x.re-frame.spec-interceptors
+             :refer
+             [validate-args validate-first-arg]]
+            [eip55.core :as eip55]
+            [re-frame.core :refer [inject-cofx reg-event-fx trim-v]]))
 
 (def interceptors [trim-v])
 (s/def ::tx-hash string?)
@@ -29,11 +26,13 @@
   (fn [{:keys [:db :web3-tx-localstorage]} [{:keys [:disable-using-localstorage?
                                                     :recommended-gas-price-option
                                                     :recommended-gas-prices-load-interval
-                                                    :disable-loading-recommended-gas-prices?]}]]
+                                                    :disable-loading-recommended-gas-prices?
+                                                    :eip55?]}]]
     (let [txs (if disable-using-localstorage? {} (queries/txs web3-tx-localstorage))]
       (merge
         {:db (-> db
                (queries/merge-txs txs)
+               (queries/assoc-opt :eip55? eip55?)
                (queries/assoc-opt :disable-using-localstorage? disable-using-localstorage?)
                (queries/assoc-opt :recommended-gas-prices-load-interval (or recommended-gas-prices-load-interval 30000))
                (queries/assoc-recommended-gas-price-option (or recommended-gas-price-option :average)))
@@ -222,12 +221,22 @@
 
 
 (reg-event-fx
-  ::set-tx
-  [interceptors (validate-args (s/cat :tx-hash ::tx-hash
-                                      :tx-data ::tx-data
-                                      :args (s/* any?)))]
-  (fn [{:keys [:db]} [tx-hash tx-data]]
-    (merge-tx-data db tx-hash tx-data)))
+ ::set-tx
+ [interceptors (validate-args (s/cat :tx-hash ::tx-hash
+                                     :tx-data ::tx-data
+                                     :args (s/* any?)))]
+ (fn [{:keys [:db]} [tx-hash tx-data]]
+   (let [eip55? (queries/eip55? db)
+         contains-in? (fn [m ks]
+                        (not= ::absent (get-in m ks ::absent)))
+         update-in-if-contains (fn
+                                 [m ks f & args]
+                                 (if (contains-in? m ks)
+                                   (apply (partial update-in m ks f) args)
+                                   m))]
+     (merge-tx-data db tx-hash (if eip55?
+                                 (update-in-if-contains tx-data [:from] eip55/address->checksum)
+                                 tx-data)))))
 
 
 (reg-event-fx
@@ -259,4 +268,3 @@
      :dispatch [::stop-watching-recommended-gas-prices]
      :window/stop-on-focus {:id ::watch-recommended-gas-prices}
      :window/stop-on-blur {:id ::stop-watching-recommended-gas-prices}}))
-

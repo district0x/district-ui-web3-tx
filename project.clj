@@ -1,4 +1,4 @@
-(defproject district0x/district-ui-web3-tx "1.0.11"
+(defproject district0x/district-ui-web3-tx "1.0.12-SNAPSHOT"
   :description "district UI module for handling web3 transactions"
   :url "https://github.com/district0x/district-ui-web3-tx"
   :license {:name "Eclipse Public License"
@@ -14,6 +14,7 @@
                  [district0x/bignumber "1.0.1"]
                  [district0x/district-cljs-utils "1.0.4"]
                  [district0x/district-ui-web3 "1.0.1"]
+                 [district0x/eip55 "0.0.1"]
                  [district0x/re-frame-interval-fx "1.0.2"]
                  [district0x/re-frame-spec-interceptors "1.0.1"]
                  [district0x/re-frame-window-fx "1.0.2"]
@@ -37,6 +38,19 @@
                    :plugins [[lein-cljsbuild "1.1.7"]
                              [lein-doo "0.1.8"]
                              [lein-npm "0.6.2"]]}}
+
+  :deploy-repositories [["snapshots" {:url "https://clojars.org/repo"
+                                      :username :env/clojars_username
+                                      :password :env/clojars_password
+                                      :sign-releases false}]
+                        ["releases"  {:url "https://clojars.org/repo"
+                                      :username :env/clojars_username
+                                      :password :env/clojars_password
+                                      :sign-releases false}]]
+
+  :release-tasks [["vcs" "assert-committed"]
+                  ["change" "version" "leiningen.release/bump-version" "release"]
+                  ["deploy"]]
 
   :cljsbuild {:builds [{:id "tests"
                         :source-paths ["src" "test"]
