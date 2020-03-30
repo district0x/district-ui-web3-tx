@@ -18,6 +18,9 @@
 (defn localstorage-disabled? [db]
   (-> db db-key :disable-using-localstorage?))
 
+(defn eip55? [db]
+  (-> db db-key :eip55?))
+
 (defn merge-tx-data [db tx-hash tx-data]
   (update-in db [db-key :txs tx-hash] merge tx-data))
 
@@ -50,4 +53,3 @@
 
 (defn dissoc-web3-tx [db]
   (dissoc db db-key))
-
