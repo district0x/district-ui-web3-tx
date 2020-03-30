@@ -10,30 +10,21 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          name: Restore m2 package cache
-          keys:
-            - -v1-maven-dependencies-{{ checksum "project.clj" }}
-            # fallback to using the latest cache if no exact match is found
-            - -v1-maven-dependencies-
-      - run: lein deps
-      - save_cache:
-          name: Save m2 package cache
-          paths:
-            - ~/.m2
-          key: -v1-maven-dependencies-{{ checksum "project.clj" }}
-      - restore_cache:
           name: Restore npm package cache
           keys:
-            - -v1-npm-dependencies-{{ checksum "package-lock.json" }}
+            - npm-packages-{{ checksum "package-lock.json" }}
       - run:
           name: Install node modules
-          command: lein npm install
+          command: npm install
       - save_cache:
           name: Save npm package cache
-          key: -v1-npm-dependencies-{{ checksum "package-lock.json" }}
+          key: npm-packages-{{ checksum "package-lock.json" }}
           paths:
-            - ./node_modules
-      - run: lein doo chrome-headless "tests" once
+            - ./node_modules/
+      - run:
+          command:
+            lein cljsbuild once browser-tests
+            #lein doo chrome-headless "browser-tests" once
 
   deploy:
    machine: true

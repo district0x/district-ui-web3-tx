@@ -1,0 +1,28 @@
+{
+  "name": "district-ui-web3-tx",
+  "version": "1.0.0-SNAPSHOT",
+  "description": "npm deps for district-ui-web3-accounts",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/district0x/district-ui-web3-accounts.git"
+  },
+  "author": "fbielejec",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/district0x/district-ui-web3-accounts/issues"
+  },
+  "homepage": "https://github.com/district0x/district-ui-web3-accounts#readme",
+  "dependencies": {
+    "karma": "^4.4.1",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-cli": "^2.0.0",
+    "karma-cljs-test": "^0.1.0"
+  }
+}
