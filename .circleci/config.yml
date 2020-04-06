@@ -8,7 +8,7 @@ jobs:
     working_directory: ~/ci
     docker:
       - image: district0x/cljs-dev:e701583
-      - image: trufflesuite/ganache-cli:v6.7.0
+      - image: trufflesuite/ganache-cli:v6.9.1
         command: [-d, -m district0x, -p 8545, -l 80000000, --noVMErrorsOnRPCResponse]
     steps:
       - checkout
