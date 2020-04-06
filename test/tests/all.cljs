@@ -10,18 +10,19 @@
    [day8.re-frame.test :refer [run-test-async run-test-sync wait-for]]
    [district.ui.smart-contracts.events :as contracts-events]
    [district.ui.smart-contracts.subs :as contracts-subs]
+   [district.ui.web3-tx.events :as events]
+   [district.ui.web3-accounts.events :as accounts-events]
 
    ;; [cljsjs.web3]
 
    ;; [district.ui.smart-contracts.deploy-events :as deploy-events]
-   ;; [district.ui.web3-accounts.events :as accounts-events]
-   ;; [district.ui.web3-accounts.subs :as accounts-subs]
-   ;; [district.ui.web3-accounts]
-   ;; [district.ui.web3-tx.events :as events]
+
+   [district.ui.web3-accounts.subs :as accounts-subs]
+   [district.ui.web3-accounts]
+
    ;; [district.ui.web3-tx.subs :as subs]
    ;; [district.ui.web3-tx]
    ;; [tests.constants :refer [mintable-token]]
-
 
 
    ))
@@ -37,25 +38,25 @@
 ;;  ::localstorage-cleared
 ;;  (constantly nil))
 
-;; (reg-event-fx
-;;  ::tx-hash
-;;  (constantly nil))
+(reg-event-fx
+ ::tx-hash
+ (constantly nil))
 
-;; (reg-event-fx
-;;  ::tx-success
-;;  (constantly nil))
+(reg-event-fx
+ ::tx-success
+ (constantly nil))
 
-;; (reg-event-fx
-;;  ::tx-success-n
-;;  (constantly nil))
+(reg-event-fx
+ ::tx-success-n
+ (constantly nil))
 
-;; (reg-event-fx
-;;  ::tx-error
-;;  (constantly nil))
+(reg-event-fx
+ ::tx-error
+ (constantly nil))
 
-;; (reg-event-fx
-;;  ::tx-error-n
-;;  (constantly nil))
+(reg-event-fx
+ ::tx-error-n
+ (constantly nil))
 
 (use-fixtures
   :each
@@ -64,9 +65,12 @@
      (mount/stop))})
 
 (deftest tx-success
-  (let [instance (subscribe [::contracts-subs/instance :mintable-token])]
+  (let [instance (subscribe [::contracts-subs/instance :mintable-token])
+        accounts (subscribe [::accounts-subs/accounts])
+        ]
     (-> (mount/with-args
           {:web3 {:url "http://localhost:8545"}
+           :web3-accounts {:eip55? true}
            ;; :web3-tx {:recommended-gas-price-option :safe-low}
            :smart-contracts {;;:disable-loading-at-start? true
                              ;; :contracts-path "./"
@@ -80,21 +84,29 @@
 
      (wait-for [::contracts-events/contracts-loaded]
        (prn "@@@ " @instance)
-       )
+       (wait-for [::accounts-events/accounts-changed]
+         (prn "@@@ " @accounts)
 
-     (is (= 1 1))
+         (is (= 1 1))
 
 
+         )
+
+       #_(dispatch [::events/send-tx {:instance @instance
+                                      :fn :mint
+                                      :args [(first @accounts) (web3/to-wei 1 :ether)]
+                                      :tx-opts {:from (first @accounts)}
+                                      :on-tx-hash [::tx-hash]
+                                      :on-tx-success [::tx-success]
+                                      :on-tx-success-n [[::tx-success-n]]}]
+
+
+
+                   ))
 
      )
 
-
-
-
-    )
-
-
-  )
+    ))
 
 
 ;; #_(deftest tx-error
