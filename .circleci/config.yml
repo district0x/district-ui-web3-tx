@@ -29,7 +29,7 @@ jobs:
           command: npx truffle migrate --network ganache
       - run:
           command:
-            lein doo chrome-headless "browser-tests" once
+            env CHROME_BIN=/usr/bin/google-chrome lein doo chrome-headless "browser-tests" once
       - slack/status:
           channel: travis-ci
           mentions: $CIRCLE_USERNAME
