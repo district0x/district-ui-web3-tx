@@ -9,7 +9,7 @@ jobs:
     docker:
       - image: district0x/cljs-dev:e701583
       - image: trufflesuite/ganache-cli:v6.7.0
-        command: [-d, -m district0x, -p 8545, -l 80000000, --noVMErrorsOnRPCResponse, -b 1]
+        command: [-d, -m district0x, -p 8545, -l 80000000, --noVMErrorsOnRPCResponse]
     steps:
       - checkout
       - restore_cache:
@@ -45,7 +45,8 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - test
+      - test:
+          context: district0x
       - deploy:
           context: district0x
           requires:
