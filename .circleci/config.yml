@@ -1,6 +1,9 @@
 version: 2.1
-jobs:
 
+orbs:
+   slack: circleci/slack@x.y.z
+
+jobs:
   test:
     working_directory: ~/ci
     docker:
@@ -26,7 +29,10 @@ jobs:
           command: npx truffle migrate --network ganache
       - run:
           command:
-            lein doo chrome-headless "browser-tests" once
+            lein doo chrome-headless "browser-tests" onc
+      - slack/status:
+          webhook: '${SLACK_WEBHOOK}'
+          channel: travis-ci
 
   deploy:
    machine: true
