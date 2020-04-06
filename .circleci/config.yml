@@ -29,9 +29,8 @@ jobs:
           command: npx truffle migrate --network ganache
       - run:
           command:
-            lein doo chrome-headless "browser-tests" onc
+            lein doo chrome-headless "browser-tests" once
       - slack/status:
-          webhook: '${SLACK_WEBHOOK}'
           channel: travis-ci
 
   deploy:
