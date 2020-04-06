@@ -27,15 +27,17 @@
                                                     :recommended-gas-price-option
                                                     :recommended-gas-prices-load-interval
                                                     :disable-loading-recommended-gas-prices?
-                                                    :eip55?]}]]
+                                                    :eip55?]
+                                             :or {recommended-gas-prices-load-interval 30000
+                                                  recommended-gas-price-option :average}}]]
     (let [txs (if disable-using-localstorage? {} (queries/txs web3-tx-localstorage))]
       (merge
         {:db (-> db
                (queries/merge-txs txs)
                (queries/assoc-opt :eip55? eip55?)
                (queries/assoc-opt :disable-using-localstorage? disable-using-localstorage?)
-               (queries/assoc-opt :recommended-gas-prices-load-interval (or recommended-gas-prices-load-interval 30000))
-               (queries/assoc-recommended-gas-price-option (or recommended-gas-price-option :average)))
+               (queries/assoc-opt :recommended-gas-prices-load-interval recommended-gas-prices-load-interval)
+               (queries/assoc-recommended-gas-price-option recommended-gas-price-option))
          :forward-events {:register ::web3-created
                           :events #{::web3-events/web3-created}
                           :dispatch-to [::watch-pending-txs]}}
