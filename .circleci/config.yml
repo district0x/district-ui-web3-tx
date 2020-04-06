@@ -53,14 +53,15 @@ workflows:
           context: district0x
       - approve_deploy:
           type: approval
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
       - slack/approval-notification:
           context: district0x
           message: Pending approval
       - deploy:
           context: district0x
           requires:
-            - test
             - approve_deploy
-          filters:
-            branches:
-              only: master
