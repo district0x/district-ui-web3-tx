@@ -35,7 +35,7 @@ jobs:
             lein doo chrome-headless "browser-tests" once
       - slack/status:
           channel: travis-ci
-          mention: $CIRCLE_USERNAME
+          mentions: $CIRCLE_USERNAME
 
   deploy:
    machine: true
