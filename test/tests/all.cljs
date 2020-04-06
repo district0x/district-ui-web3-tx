@@ -90,8 +90,8 @@
            (wait-for [::events/add-tx]
              (wait-for [::tx-hash]
 
-               ;; (is (= 1 (count @txs)))
-               ;; (is (= @pending-txs @txs))
+               (is (= 1 (count @txs)))
+               (is (= @pending-txs @txs))
 
                (wait-for [::events/tx-success ::events/tx-error]
                  (wait-for [::events/set-tx]
@@ -118,6 +118,8 @@
         failed-txs (subscribe [::subs/txs {:status :tx.status/error}])
         accounts (subscribe [::accounts-subs/accounts])
         recommended-gas-price (subscribe [::subs/recommended-gas-price])]
+
+    (prn "@@@ FUBAR")
 
     (-> (mount/with-args
           {:web3 {:url "http://localhost:8545"}

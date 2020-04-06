@@ -29,9 +29,6 @@ jobs:
           command: npx truffle migrate --network ganache
       - run:
           command:
-            google-chrome --version
-      - run:
-          command:
             lein doo chrome-headless "browser-tests" once
       - slack/status:
           channel: travis-ci
