@@ -17,19 +17,18 @@
    [mount.core :as mount]
    [re-frame.core :refer [reg-event-fx dispatch-sync subscribe reg-cofx reg-sub dispatch trim-v]]
    [tests.smart-contracts-test :refer [smart-contracts]]
-
    ;; [cljsjs.web3]
 
    [district.ui.web3-tx.subs :as subs]
 
    ))
 
-;; (reg-event-fx
-;;  ::clear-localstorage
-;;  (fn [{:keys [:db]}]
-;;    {:dispatch [::events/clear-localstorage]
-;;     ;; Hack so the storage gets actually cleared before tests cut off execution
-;;     :dispatch-later [{:ms 50 :dispatch [::localstorage-cleared]}]}))
+(reg-event-fx
+ ::clear-localstorage
+ (fn [{:keys [:db]}]
+   {:dispatch [::events/clear-localstorage]
+    ;; Hack so the storage gets actually cleared before tests cut off execution
+    :dispatch-later [{:ms 50 :dispatch [::localstorage-cleared]}]}))
 
 ;; (reg-event-fx
 ;;  ::localstorage-cleared
@@ -85,7 +84,6 @@
        (wait-for [::accounts-events/accounts-changed]
          (is (not (empty? @accounts)))
          (is (not (nil? @web3)))
-
          (dispatch [::events/send-tx {:instance @instance
                                       :fn :mint
                                       :args [(first @accounts) (web3/to-wei 1 :ether)]
@@ -93,31 +91,30 @@
                                       :on-tx-hash [::tx-hash]
                                       :on-tx-success [::tx-success]
                                       :on-tx-success-n [[::tx-success-n]]}])
-
          (wait-for [::events/tx-hash ::events/tx-hash-error]
            (wait-for [::events/add-tx]
              (wait-for [::tx-hash]
 
-               (is (= 1 (count @txs)))
-               (is (= @pending-txs @txs))
-
-               ;; (prn @txs @pending-txs)
+               ;; (is (= 1 (count @txs)))
+               ;; (is (= @pending-txs @txs))
 
                (wait-for [::events/tx-success ::events/tx-error]
-
-                 (is (= 1 1))
-
-
-                 )
-
-               )
-
-             )
-
-           )
-
-
-         )))))
+                 (wait-for [::events/set-tx]
+                   (wait-for [::tx-success]
+                     (wait-for [::tx-success-n]
+                       (wait-for [::events/tx-loaded ::events/tx-load-failed]
+                         (wait-for [::events/set-tx]
+                           (is (= @success-txs @txs))
+                           (is (= 0 (count @pending-txs)))
+                           (let [{:keys [:transaction-hash :gas-used :created-on :status :gas-price] :as tx} (first (vals @txs))]
+                             (is (string? transaction-hash))
+                             (is (pos? gas-used))
+                             (is (instance? js/Date created-on))
+                             (is (= status :tx.status/success))
+                             (is (= tx @(subscribe [::subs/tx transaction-hash])))
+                             (is (number? gas-price))
+                             (dispatch [::clear-localstorage])
+                             (wait-for [::localstorage-cleared]))))))))))))))))
 
 
 ;; #_(deftest tx-error
