@@ -25,12 +25,7 @@
   :doo {:karma {:config {"colors" true
                          "files" [{"pattern" "tests-output/*.js" "watched" true "served" true "included" true }
                                   {"pattern" "tests-output/**/*.js" "watched" true "served" true "included" true}
-
-                                  {"pattern" "resources/public/contracts/build/*.json" "watched" false "served" true "included" false "nocache" true}
-
-
-                                  ]
-                         }}
+                                  {"pattern" "resources/public/contracts/build/*.json" "watched" false "served" true "included" false "nocache" true}]}}
         :paths {:karma "./node_modules/karma/bin/karma"}}
 
   :profiles {:dev {:source-paths ["src" "test"]

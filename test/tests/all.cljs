@@ -1,29 +1,26 @@
 (ns tests.all
   (:require
-   [tests.smart-contracts-test :refer [smart-contracts]]
-   [district.ui.web3]
-   [district.ui.smart-contracts]
-   [mount.core :as mount]
-   [re-frame.core :refer [reg-event-fx dispatch-sync subscribe reg-cofx reg-sub dispatch trim-v]]
    [cljs-web3.core :as web3]
    [cljs.test :refer [deftest is testing run-tests async use-fixtures]]
    [day8.re-frame.test :refer [run-test-async run-test-sync wait-for]]
    [district.ui.smart-contracts.events :as contracts-events]
    [district.ui.smart-contracts.subs :as contracts-subs]
-   [district.ui.web3-tx.events :as events]
+   [district.ui.smart-contracts]
    [district.ui.web3-accounts.events :as accounts-events]
+   [district.ui.web3-accounts.subs :as accounts-subs]
+   [district.ui.web3-accounts]
+   [district.ui.web3-tx.events :as events]
+   [district.ui.web3-tx]
+   [district.ui.web3.events :as web3-events]
+   [district.ui.web3.subs :as web3-subs]
+   [district.ui.web3]
+   [mount.core :as mount]
+   [re-frame.core :refer [reg-event-fx dispatch-sync subscribe reg-cofx reg-sub dispatch trim-v]]
+   [tests.smart-contracts-test :refer [smart-contracts]]
 
    ;; [cljsjs.web3]
 
-   ;; [district.ui.smart-contracts.deploy-events :as deploy-events]
-
-   [district.ui.web3-accounts.subs :as accounts-subs]
-   [district.ui.web3-accounts]
-
-   ;; [district.ui.web3-tx.subs :as subs]
-   ;; [district.ui.web3-tx]
-   ;; [tests.constants :refer [mintable-token]]
-
+   [district.ui.web3-tx.subs :as subs]
 
    ))
 
@@ -67,46 +64,60 @@
 (deftest tx-success
   (let [instance (subscribe [::contracts-subs/instance :mintable-token])
         accounts (subscribe [::accounts-subs/accounts])
-        ]
+        web3 (subscribe [::web3-subs/web3])
+        txs (subscribe [::subs/txs])
+        pending-txs (subscribe [::subs/txs {:status :tx.status/pending}])
+        success-txs (subscribe [::subs/txs {:status :tx.status/success}])]
+
     (-> (mount/with-args
           {:web3 {:url "http://localhost:8545"}
            :web3-accounts {:eip55? true}
-           ;; :web3-tx {:recommended-gas-price-option :safe-low}
-           :smart-contracts {;;:disable-loading-at-start? true
-                             ;; :contracts-path "./"
+           :web3-tx {:disable-loading-recommended-gas-prices? true}
+           :smart-contracts {:disable-loading-at-start? false
                              :contracts-path "base/resources/public/contracts/build/"
                              :format :truffle-json
-                             :contracts smart-contracts
-                             }})
+                             :contracts smart-contracts}})
         (mount/start))
 
     (run-test-async
-
      (wait-for [::contracts-events/contracts-loaded]
-       (prn "@@@ " @instance)
+       (is (not (nil? @instance)))
        (wait-for [::accounts-events/accounts-changed]
-         (prn "@@@ " @accounts)
+         (is (not (empty? @accounts)))
+         (is (not (nil? @web3)))
 
-         (is (= 1 1))
-
-
-         )
-
-       #_(dispatch [::events/send-tx {:instance @instance
+         (dispatch [::events/send-tx {:instance @instance
                                       :fn :mint
                                       :args [(first @accounts) (web3/to-wei 1 :ether)]
                                       :tx-opts {:from (first @accounts)}
                                       :on-tx-hash [::tx-hash]
                                       :on-tx-success [::tx-success]
-                                      :on-tx-success-n [[::tx-success-n]]}]
+                                      :on-tx-success-n [[::tx-success-n]]}])
+
+         (wait-for [::events/tx-hash ::events/tx-hash-error]
+           (wait-for [::events/add-tx]
+             (wait-for [::tx-hash]
+
+               (is (= 1 (count @txs)))
+               (is (= @pending-txs @txs))
+
+               ;; (prn @txs @pending-txs)
+
+               (wait-for [::events/tx-success ::events/tx-error]
+
+                 (is (= 1 1))
 
 
+                 )
 
-                   ))
+               )
 
-     )
+             )
 
-    ))
+           )
+
+
+         )))))
 
 
 ;; #_(deftest tx-error
