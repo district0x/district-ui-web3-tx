@@ -1,8 +1,8 @@
 const fs = require('fs');
 const edn = require("jsedn");
 
-const {last, copy, linkBytecode, smartContractsTemplate} = require ("./utils.js");
-const {contracts_build_directory, smart_contracts_path} = require ('../truffle.js');
+const { smartContractsTemplate } = require ("./utils.js");
+const { smart_contracts_path } = require ('../truffle.js');
 
 const MintableToken = artifacts.require("MintableToken");
 
