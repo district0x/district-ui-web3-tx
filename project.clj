@@ -22,16 +22,21 @@
                  [org.clojure/clojurescript "1.10.597"]
                  [re-frame "0.11.0"]]
 
-  :doo {:paths {:karma "./node_modules/karma/bin/karma"}}
+  :doo {:karma {:config {"colors" true
+                         "files" [{"pattern" "tests-output/*.js" "watched" true "served" true "included" true }
+                                  {"pattern" "tests-output/**/*.js" "watched" true "served" true "included" true}
+                                  {"pattern" "resources/public/contracts/build/*.json" "watched" false "served" true "included" false "nocache" true}]}}
+        :paths {:karma "./node_modules/karma/bin/karma"}}
 
   :profiles {:dev {:source-paths ["src" "test"]
+                   :resource-paths ["resources"]
                    :dependencies [[day8.re-frame/test "0.1.5"]
                                   [district0x/district-ui-smart-contracts "1.0.8"]
                                   [district0x/district-ui-web3-accounts "1.0.7"]
                                   [org.clojure/clojure "1.10.1"]
-                                  [lein-doo "0.1.8"]]
+                                  [lein-doo "0.1.11"]]
                    :plugins [[lein-cljsbuild "1.1.7"]
-                             [lein-doo "0.1.8"]]}}
+                             [lein-doo "0.1.11"]]}}
 
   :deploy-repositories [["snapshots" {:url "https://clojars.org/repo"
                                       :username :env/clojars_username
@@ -48,6 +53,7 @@
 
   :cljsbuild {:builds [{:id "browser-tests"
                         :source-paths ["src" "test"]
+                        :resource-paths ["resources"]
                         :compiler {:output-to "tests-output/tests.js"
                                    :output-dir "tests-output"
                                    :main "tests.runner"

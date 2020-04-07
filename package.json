@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "contracts:compile": "npx truffle compile",
+    "contracts:deploy": "npx truffle migrate --network=ganache --reset"
   },
   "repository": {
     "type": "git",
@@ -20,9 +21,11 @@
   },
   "homepage": "https://github.com/district0x/district-ui-web3-accounts#readme",
   "dependencies": {
-    "karma": "^4.4.1",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-cli": "^2.0.0",
-    "karma-cljs-test": "^0.1.0"
+    "karma": "4.4.1",
+    "karma-chrome-launcher": "3.1.0",
+    "karma-cli": "2.0.0",
+    "karma-cljs-test": "0.1.0",
+    "jsedn": "0.4.1",
+    "truffle": "4.1.14"
   }
 }
