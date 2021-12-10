@@ -35,6 +35,7 @@
         {:db (-> db
                (queries/merge-txs txs)
                (queries/assoc-opt :eip55? eip55?)
+               (queries/assoc-opt :disable-loading-recommended-gas-prices? disable-loading-recommended-gas-prices?)
                (queries/assoc-opt :disable-using-localstorage? disable-using-localstorage?)
                (queries/assoc-opt :recommended-gas-prices-load-interval recommended-gas-prices-load-interval)
                (queries/assoc-recommended-gas-price-option recommended-gas-price-option))
@@ -126,9 +127,11 @@
                    {:instance instance
                     :fn fn
                     :args args
-                    :tx-opts (merge
-                               {:gas-price (queries/recommended-gas-price db)}
-                               tx-opts)
+                    :tx-opts (if (queries/opt db :disable-loading-recommended-gas-prices?)
+                               tx-opts
+                               (merge
+                                {:gas-price (queries/recommended-gas-price db)}
+                                tx-opts))
                     :on-tx-hash [::tx-hash opts]
                     :on-tx-hash-error [::tx-hash-error opts]
                     :on-tx-receipt [::tx-receipt opts]
