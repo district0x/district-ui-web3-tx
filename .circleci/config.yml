@@ -30,9 +30,6 @@ jobs:
       - run:
           command:
             lein doo chrome-headless "browser-tests" once
-      - slack/status:
-          channel: travis-ci
-          mentions: $CIRCLE_USERNAME
 
   deploy:
    machine: true
@@ -41,9 +38,6 @@ jobs:
      - run:
          name: Deploy to clojars
          command: lein release :patch
-     - slack/status:
-         channel: travis-ci
-         mentions: $CIRCLE_USERNAME
 
 workflows:
   version: 2
