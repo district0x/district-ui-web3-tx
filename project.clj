@@ -10,7 +10,7 @@
                  [cljs-web3 "0.19.0-0-11"]
                  [day8.re-frame/forward-events-fx "0.0.6"]
                  [day8.re-frame/http-fx "0.1.6"]
-                 [district0x.re-frame/web3-fx "1.0.5"]
+                 [district0x.re-frame/web3-fx "1.0.7"]
                  [district0x/bignumber "1.0.3"]
                  [district0x/district-cljs-utils "1.0.4"]
                  [district0x/district-ui-web3 "1.3.2"]
