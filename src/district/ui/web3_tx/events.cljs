@@ -7,6 +7,7 @@
             [cljs.spec.alpha :as s]
             [district.cljs-utils :as cljs-utils]
             [district.ui.web3-tx.queries :as queries]
+            [district0x.re-frame.web3-fx]
             [district.ui.web3.events :as web3-events]
             [district.ui.web3.queries :as web3-queries]
             [district0x.re-frame.spec-interceptors
