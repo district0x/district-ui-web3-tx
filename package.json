@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/district0x/district-ui-web3-accounts#readme",
   "dependencies": {
-    "karma": "4.4.1",
+    "karma": "6.3.14",
     "karma-chrome-launcher": "3.1.0",
     "karma-cli": "2.0.0",
     "karma-cljs-test": "0.1.0",
