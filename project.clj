@@ -10,7 +10,7 @@
                  [cljs-web3 "0.19.0-0-11"]
                  [day8.re-frame/forward-events-fx "0.0.6"]
                  [day8.re-frame/http-fx "0.1.6"]
-                 [district0x.re-frame/web3-fx "1.0.7"]
+                 [district0x.re-frame/web3-fx "1.0.6"]
                  [district0x/bignumber "1.0.3"]
                  [district0x/district-cljs-utils "1.0.4"]
                  [district0x/district-ui-web3 "1.3.2"]
@@ -23,9 +23,13 @@
                  [re-frame "0.11.0"]]
 
   :doo {:karma {:config {"colors" true
-                         "files" [{"pattern" "tests-output/*.js" "watched" true "served" true "included" true }
-                                  {"pattern" "tests-output/**/*.js" "watched" true "served" true "included" true}
-                                  {"pattern" "resources/public/contracts/build/*.json" "watched" false "served" true "included" false "nocache" true}]}}
+                         "files" [
+                                  {"pattern" "tests-output/*.js" "watched" true "served" true "included" true }
+                                  {"pattern" "tests-output/**/*.js" "watched" true "served" true "included" true }
+                                  ; {"pattern" "tests-output/*.js" "watched" true "served" true "included" true }
+                                  ; {"pattern" "tests-output/**/*.js" "watched" true "served" true "included" true}
+                                  {"pattern" "resources/public/contracts/build/*.json" "watched" false "served" true "included" false "nocache" true}
+                                  ]}}
         :paths {:karma "./node_modules/karma/bin/karma"}}
 
   :profiles {:dev {:source-paths ["src" "test"]
@@ -54,7 +58,8 @@
   :cljsbuild {:builds [{:id "browser-tests"
                         :source-paths ["src" "test"]
                         :resource-paths ["resources"]
-                        :compiler {:output-to "tests-output/tests.js"
+                        :compiler {:asset-path "tests-output"
+                                   :output-to "tests-output/tests.js"
                                    :output-dir "tests-output"
                                    :main "tests.runner"
                                    :optimizations :none}}]})
