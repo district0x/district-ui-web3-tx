@@ -1,72 +1,60 @@
 version: 2.1
-
-orbs:
-   slack: circleci/slack@3.4.2
-
 jobs:
+
   test:
     working_directory: ~/ci
     docker:
-      - image: district0x/cljs-dev:02e2108
-      - image: trufflesuite/ganache-cli:v6.9.1
-        command: [-d, -m district0x, -p 8545, -l 80000000, --noVMErrorsOnRPCResponse]
+      # Primary container image where all steps run.
+      - image: 487920318758.dkr.ecr.us-west-2.amazonaws.com/cljs-web3-ci:node-18.7.0
+        aws_auth:
+            aws_access_key_id: $AWS_ACCESS_KEY_ID
+            aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+      # Secondary container image on common network.
+      - image: trufflesuite/ganache-cli:latest
+        command: [-d, -m district0x, -p 8549, -l 8000000, -b 10]
     steps:
       - checkout
       - restore_cache:
           name: Restore npm package cache
           keys:
-            - npm-packages-{{ checksum "package-lock.json" }}
+            - npm-packages-{{ checksum "yarn.lock" }}
       - run:
           name: Install node modules
-          command: npm install
+          command: yarn install
       - save_cache:
           name: Save npm package cache
-          key: npm-packages-{{ checksum "package-lock.json" }}
+          key: npm-packages-{{ checksum "yarn.lock" }}
           paths:
             - ./node_modules/
-      - run:
-          name: migrate contracts
-          command: npx truffle migrate --network ganache
-      - run:
-          command:
-            lein doo chrome-headless "browser-tests" once
-      - slack/status:
-          channel: travis-ci
-          mentions: $CIRCLE_USERNAME
+      - run: npx truffle migrate --network ganache --reset
+      - run: npx shadow-cljs compile test-ci
+      - run: CHROME_BIN=`which chromium-browser` npx karma start karma.conf.js --single-run
 
   deploy:
-   machine: true
-   steps:
-     - checkout
-     - run:
-         name: Deploy to clojars
-         command: lein release :patch
-     - slack/status:
-         channel: travis-ci
-         mentions: $CIRCLE_USERNAME
+    working_directory: ~/ci
+
+    docker:
+      - image: 487920318758.dkr.ecr.us-west-2.amazonaws.com/cljs-web3-ci:node-18.7.0
+        aws_auth:
+            aws_access_key_id: $AWS_ACCESS_KEY_ID
+            aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+    steps:
+      - checkout
+      - run:
+          name: Build JAR
+          command: clojure -T:build jar
+      - run:
+          name: Release to clojars
+          command: clojure -T:build deploy
 
 workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - test:
-          context: district0x
-      - approve_deploy:
-          type: approval
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - slack/approval-notification:
-          context: district0x
-          message: Pending approval
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
+      - test
       - deploy:
-          context: district0x
           requires:
-            - approve_deploy
+            - test
+          filters:
+            branches:
+              only: master

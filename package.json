@@ -1,31 +1,17 @@
 {
-  "name": "district-ui-web3-tx",
-  "version": "1.0.0-SNAPSHOT",
-  "description": "npm deps for district-ui-web3-accounts",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "contracts:compile": "npx truffle compile",
-    "contracts:deploy": "npx truffle migrate --network=ganache --reset"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/district0x/district-ui-web3-accounts.git"
-  },
-  "author": "fbielejec",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/district0x/district-ui-web3-accounts/issues"
-  },
-  "homepage": "https://github.com/district0x/district-ui-web3-accounts#readme",
   "dependencies": {
-    "karma": "4.4.1",
-    "karma-chrome-launcher": "3.1.0",
+    "create-react-class": "^15.7.0",
+    "web3": "1.7.3"
+  },
+  "devDependencies": {
+    "jsedn": "0.4.1",
+    "karma": "6.3.0",
+    "karma-chrome-launcher": "2.2.0",
     "karma-cli": "2.0.0",
     "karma-cljs-test": "0.1.0",
-    "jsedn": "0.4.1",
-    "truffle": "4.1.14"
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "shadow-cljs": "2.19.3",
+    "truffle": "5.5.27"
   }
 }

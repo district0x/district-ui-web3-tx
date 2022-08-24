@@ -11,7 +11,7 @@ additional features on top of it. Example of such module is [district-ui-web3-tx
 
 ## Installation
 
-[![Clojars Project](https://img.shields.io/clojars/v/district0x/district-ui-web3-tx.svg)](https://clojars.org/district0x/district-ui-web3-tx)
+[![Clojars Project](https://img.shields.io/clojars/v/io.github.district0x/district-ui-web3-tx.svg?include_prereleases)](https://clojars.org/io.github.district0x/district-ui-web3-tx)
 
 Include `[district.ui.web3-tx]` in your CLJS file, where you use `mount/start`
 
@@ -272,10 +272,26 @@ Associates an opt into this module state. For internal purposes mainly.
 * [district-ui-web3](https://github.com/district0x/district-ui-web3)
 
 ## Development
-```bash
-lein deps
-# Start ganache blockchain with 1s block time
-ganache-cli -p 8549 -b 1 --noVMErrorsOnRPCResponse
-# To run tests and rerun on changes
-lein doo chrome tests
-```
+
+1. Setup local testnet
+
+- spin up a testnet instance in a separate shell
+  - `npx truffle develop`
+
+- migrate contracts in `contracts/` folder
+  - `npx truffle migrate --network ganache --reset`
+
+2. Run test suite:
+- Browser
+  - `npx shadow-cljs watch test-browser`
+  - open https://d0x-vm:6502
+  - tests refresh automatically on code change
+- CI (Headless Chrome, Karma)
+  - `npx shadow-cljs compile test-ci`
+  - ``CHROME_BIN=`which chromium-browser` npx karma start karma.conf.js --single-run``
+
+3. Build
+- on merging pull request to master on GitHub, CI builds & publishes new version automatically
+- update version in `build.clj`
+- to build: `clj -T:build jar`
+- to release: `clj -T:build deploy` (needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` env vars to be set)

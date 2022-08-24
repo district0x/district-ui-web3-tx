@@ -3,9 +3,10 @@
             [bignumber.core :as bn]
             [camel-snake-kebab.core :as cs]
             [camel-snake-kebab.extras :refer [transform-keys]]
-            [cljs-web3.eth :as web3-eth]
+            [cljs-web3-next.eth :as web3-eth]
             [cljs.spec.alpha :as s]
             [district.cljs-utils :as cljs-utils]
+            [cljs-web3-next.utils :as web3-utils]
             [district.ui.web3-tx.queries :as queries]
             [district0x.re-frame.web3-fx]
             [district.ui.web3.events :as web3-events]
@@ -122,7 +123,7 @@
   ::send-tx
   interceptors
   (fn [{:keys [:db]} [{:keys [:instance :fn :tx-opts :args] :as opts}]]
-    {:web3/call
+    {:web3/send
      {:web3 (web3-queries/web3 db)
       :fns [(merge opts
                    {:instance instance
@@ -181,6 +182,11 @@
   (fn [{:keys [:db]} [{:keys [:on-tx-error :on-tx-error-n]} {:keys [:transaction-hash] :as tx-receipt}]]
     (let [tx-receipt (assoc tx-receipt :status :tx.status/error)]
       (merge
+        {:web3/call {:web3 (web3-queries/web3 db)
+                     :fns [{:fn web3-eth/get-transaction
+                            :args [transaction-hash]
+                            :on-success [::tx-loaded transaction-hash tx-receipt]
+                            :on-error [::tx-load-failed]}]}}
         {:dispatch [::set-tx transaction-hash tx-receipt]}
         (when (or on-tx-error on-tx-error-n)
           {:dispatch-n (concat-callback-effects on-tx-error on-tx-error-n [tx-receipt])})))))
@@ -203,8 +209,9 @@
 (reg-event-fx
   ::tx-loaded
   interceptors
-  (fn [{:keys [:db]} [tx-hash tx-receipt tx-data]]
+  (fn [{:keys [:db]} [tx-hash _tx-receipt tx-data]]
     {:dispatch [::set-tx tx-hash (-> tx-data
+                                     web3-utils/js->cljkk
                                    (update :value bn/number)
                                    (update :gas-price bn/number))]}))
 
